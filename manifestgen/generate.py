@@ -2,6 +2,7 @@
 # pylint: disable=unused-argument, superfluous-parens
 # pylint: disable=invalid-name
 
+import sys
 import os
 import argparse
 
@@ -90,10 +91,10 @@ def find_charts(chart_dir):
     return resp
 
 
-def generate(**args):
+def manifestgen(**args):
     """ Generate the manifest """
-
-    mani_path = os.path.join(os.path.dirname(__file__), 'files', 'master_manifest.yaml')
+    mani_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                             'files', 'master_manifest.yaml')
     manifest = Manifest(mani_path)
 
     if args.get('name') is not None:
@@ -106,7 +107,6 @@ def generate(**args):
         manifest.data['repositories']['helm'] = args['helm_repo']
 
     chart_dir = args['charts']
-    print(chart_dir)
     all_charts = manifest.get_charts()
 
     if not validate_charts_path(chart_dir):
@@ -138,8 +138,8 @@ def generate(**args):
 def main():
     """ Main entrypoint """
     args = get_args()
-    generate(**vars(args))
+    manifestgen(**vars(args))
 
 
-if __name__ == "__main__":
+if getattr(sys, 'frozen', False):
     main()

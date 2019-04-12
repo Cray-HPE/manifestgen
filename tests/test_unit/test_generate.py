@@ -23,7 +23,7 @@ def test_generate():
             'helm_repo': helm_repo,
             'name': chart_name
         }
-        generate.generate(**args)
+        generate.manifestgen(**args)
         fp.seek(0)
         data = yaml.safe_load(fp)
 

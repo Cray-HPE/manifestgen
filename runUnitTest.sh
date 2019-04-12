@@ -12,3 +12,12 @@ else
     echo "FAIL: manifestgen returns an error."
     exit 1
 fi
+
+
+cli_run=$($CLI tests/files/)
+if [[ $? == 0 ]]; then
+    echo "PASS: manifestgen tests/files/ returns successfully"
+else
+    echo "FAIL: manifestgen tests/files/ returns an error."
+    exit 1
+fi
