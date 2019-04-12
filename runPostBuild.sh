@@ -10,7 +10,7 @@ if command -v yum > /dev/null; then
     yum install -y RPMS/$RPM
 elif command -v zypper > /dev/null; then
     zypper --help
-    zypper install -y -f -l -G RPMS/$RPM
+    zypper --no-gpg-checks install -y -f -l RPMS/$RPM
 else
     echo "Unsupported package manager or package manager not found -- installing nothing"
     exit 1
