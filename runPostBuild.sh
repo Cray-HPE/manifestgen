@@ -1,5 +1,13 @@
 #!/bin/bash
 
+echo "PWD"
+echo $PWD
+
+echo "ls -la"
+ls -la
+echo "ls -la .dist"
+ls -la ./dist
+
 
 # Run some sanity tests to make sure the built binary works.
 CLI="./dist/manifestgen"
