@@ -1,16 +1,17 @@
 #!/bin/bash
 
+VERSION=$(cat version).$BUILD_NUMBER
+
 echo "PWD"
 echo $PWD
 
 echo "ls -la"
 ls -la
 echo "ls -la .dist"
-ls -la ./WORKSPACE/BUILD
-
+ls -la ./WORKSPACE/BUILD/manifestgen-$VERSION
 
 # Run some sanity tests to make sure the built binary works.
-CLI="./WORKSPACE/BUILD/dist/manifestgen"
+CLI="./WORKSPACE/BUILD/manifestgen-${VERSION}/dist/manifestgen"
 
 
 cli_help=$($CLI --help)
