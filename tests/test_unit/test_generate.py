@@ -1,8 +1,8 @@
 """ Test the validator """
+# pylint: disable=import-error, invalid-name
 import os
 import tempfile
 
-import pytest
 from ruamel import yaml
 
 from manifestgen import generate

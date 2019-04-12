@@ -136,6 +136,7 @@ def generate(**args):
 
 
 def main():
+    """ Main entrypoint """
     args = get_args()
     generate(**vars(args))
 
