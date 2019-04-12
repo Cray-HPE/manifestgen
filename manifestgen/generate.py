@@ -148,6 +148,7 @@ def main():
     """ Main entrypoint """
     args = get_args()
     manifestgen(**vars(args))
+    sys.exit(0)
 
 
 if getattr(sys, 'frozen', False):
