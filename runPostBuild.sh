@@ -6,11 +6,11 @@ echo $PWD
 echo "ls -la"
 ls -la
 echo "ls -la .dist"
-ls -la ./dist
+ls -la ./WORKSPACE/BUILD
 
 
 # Run some sanity tests to make sure the built binary works.
-CLI="./dist/manifestgen"
+CLI="./WORKSPACE/BUILD/dist/manifestgen"
 
 
 cli_help=$($CLI --help)
