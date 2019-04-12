@@ -1,0 +1,18 @@
+recursive-include manifestgen/schemas *
+recursive-include manifestgen/files *
+include LICENSE.txt
+
+recursive-exclude __pycache__  *.pyc *.pyo *.orig
+
+include requirements*.*
+exclude requirements-dev.*
+exclude requirements-test.*
+exclude requirements-lint.*
+exclude requirements-docs.*
+include *.py
+include install.sh
+include rpm_post_install.sh
+
+prune .git
+prune venv
+prune test*

@@ -1,0 +1,17 @@
+schema: enum('v1')
+name: str()
+version: version()
+failOnFirstError: bool()
+repositories:
+    docker: str()
+    helm: str()
+charts: list(include('chart'))
+---
+chart:
+  name: str()
+  namespace: str()
+  version: version()
+  upgradeExisting: bool()
+  async: bool()
+  pods: list(required=False)
+  overrides: list(required=False)
