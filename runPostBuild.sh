@@ -2,16 +2,14 @@
 
 VERSION=$(cat version).$BUILD_NUMBER
 
-echo "PWD"
-echo $PWD
+ls -la RPMS
 
-echo "ls -la"
-ls -la
-echo "ls -la .dist"
-ls -la ./WORKSPACE/BUILD/manifestgen-$VERSION
+RPM=$(ls -l RPMS |grep rpm | grep -v src | awk '{print $NF}')
+
+yum install -y RPMS/$RPM
 
 # Run some sanity tests to make sure the built binary works.
-CLI="./WORKSPACE/BUILD/manifestgen-${VERSION}/dist/manifestgen"
+CLI="manifestgen"
 
 
 cli_help=$($CLI --help)
