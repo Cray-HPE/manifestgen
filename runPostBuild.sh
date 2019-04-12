@@ -9,7 +9,8 @@ RPM=$(ls -l RPMS |grep rpm | grep -v src | awk '{print $NF}')
 if command -v yum > /dev/null; then
     yum install -y RPMS/$RPM
 elif command -v zypper > /dev/null; then
-    zypper install -y -f -l --no-gpgcheck RPMS/$RPM
+    zypper --help
+    zypper install -y -f -l -G RPMS/$RPM
 else
     echo "Unsupported package manager or package manager not found -- installing nothing"
     exit 1
