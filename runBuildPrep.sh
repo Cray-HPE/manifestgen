@@ -57,10 +57,3 @@ fi
 $PIP2 install --ignore-installed -r requirements.txt
 
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
-
-rm -rf .nox
-
-set -e
-
-# Note we are running this all here as we want to break the build BEFORE an rpm is built.
-nox

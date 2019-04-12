@@ -1,25 +1,12 @@
 #!/bin/bash
 
+# Remove before just to ensure a clean nox env.
+rm -rf .nox
 
-# Run some sanity tests to make sure the built binary works.
-CLI="./dist/manifestgen"
+set -e
 
+# Note we are running this all here as we want to break the build BEFORE an rpm is built.
+nox
 
-cli_help=$($CLI --help)
-if [[ $? == 0 ]]; then
-    echo "PASS: manifestgen returns help"
-else
-    echo "FAIL: manifestgen returns an error."
-    echo $cli_help
-    exit 1
-fi
-
-
-cli_run=$($CLI tests/files/)
-if [[ $? == 0 ]]; then
-    echo "PASS: manifestgen tests/files/ returns successfully"
-else
-    echo "FAIL: manifestgen tests/files/ returns an error."
-    echo $cli_run
-    exit 1
-fi
+# Remove these files again to speed up source tar for build step.
+rm -rf .nox
