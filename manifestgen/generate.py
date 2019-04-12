@@ -23,6 +23,8 @@ def get_args():
     parser.add_argument('--docker-repo', help='Docker repo to install from.')
     parser.add_argument('--helm-repo', help='Chart repo to install from.')
     parser.add_argument('-o', '--out', help='Output file')
+    parser.add_argument('--ignore-extra', default=False, action='store_true',
+                        help='Don\'t error for extra charts that are in the master manifest.')
     return parser.parse_args()
 
 
@@ -119,7 +121,14 @@ def manifestgen(**args):
         c = blob_charts.get(chart['name'])
         if c:
             chart.update(c)
+            del blob_charts[chart['name']]
             manifest_charts.append(chart)
+
+    if blob_charts and not args.get('ignore_extra'):
+        # Some charts exist that aren't in the master manifest
+        extra_charts = ", ".join(blob_charts.keys())
+        msg = "Some charts exist in the blob that don't exist in the master manifest: {}"
+        raise Exception(msg.format(extra_charts))
 
     # Trim master chart to only include charts in blob
     manifest.set_charts(manifest_charts)
