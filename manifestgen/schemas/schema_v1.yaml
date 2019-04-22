@@ -11,7 +11,14 @@ chart:
   name: str()
   namespace: str()
   version: version()
-  upgradeExisting: bool()
-  async: bool()
-  pods: list(required=False)
+  waitFor: include('waitFor', required=False)
   overrides: list(required=False)
+---
+waitFor:
+  helm: bool(required=False)
+  pods: list(required=False)
+  script: include('script', required=False)
+---
+script:
+  command: str()
+  return: str()
