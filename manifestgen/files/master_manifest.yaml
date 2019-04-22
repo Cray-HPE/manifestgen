@@ -2,139 +2,60 @@
 schema: v1
 name: cray-loftsman-manifest
 version: 1.0.0
-failOnFirstError: False
+failOnFirstError: True
 repositories:
-    docker: registry.local
-    helm: charts.local
-charts: # List of chart IN ORDER to install
+  docker: registry.local
+  helm: charts.local
+charts: # Will install/upgrade charts in the order below
   - name: "cray-drydock"
     namespace: "loftsman"
     version: 1.0.0
-    upgradeExisting: True
-    async: False
     overrides:
     - global.imageRepoPrefix="{repos[docker]}/"
-  - name: "cray-istio"
+  - name: "cray-istio-init"
     namespace: "istio-system"
-    version: 1.0.2
-    upgradeExisting: False
-    async: False
-    pods: # Pod names to confirm running for blocking calls.
-    - istio-pilot
-    - istio-citadel
-    - istio-egressgateway
-    - istio-galley
-    - istio-ingressgateway
-    - istio-policy
-    - istio-sidecar-injector
+    version: 1.1.2
+    waitFor:
+      script:
+        command: >-
+          kubectl get crds | grep 'istio.io\|certmanager.k8s.io' | wc -l
+        return: "53"
     overrides:
     - global.hub="{repos[docker]}/istio"
-    - global.hyperkube.hub="{repos[docker]}/coreos"
-    - istio.mixer.prometheusStatsdExporter.hub="{repos[docker]}/prom"
-    - istio.prometheus.hub="{repos[docker]}/prom"
-    - istio.tracing.jaeger.hub="{repos[docker]}/jaegertracing"
-    - istio.kiali.hub="{repos[docker]}/kiali"
-    - istio.certmanager.hub="{repos[docker]}/jetstack"
-    # the below value doesn't actually appear to be a used value in the 1.0.2 tag/version of the repo:
-    # https://github.com/istio/istio/blob/1.0.2/install/kubernetes/helm/istio/values.yaml
-    # - istio.security.enabled=true
-    - global.mtls.enabled=true
-  - name: "keycloak"
-    namespace: "services"
-    version: 4.3.0
-    upgradeExisting: True
-    async: False
-    pods:
-    - keycloak
+  - name: "cray-istio"
+    namespace: "istio-system"
+    version: 1.1.2
+    waitFor:
+      pods:
+      - istio-pilot
+      - istio-citadel
+      - istio-galley
+      - istio-ingressgateway
+      - istio-policy
+      - istio-sidecar-injector
     overrides:
-    - keycloak.image.repository="{repos[docker]}/jboss/keycloak"
+    - global.hub="{repos[docker]}/istio"
+    - istio.prometheus.hub="{repos[docker]}/prom"
+    - istio.gateways.istio-ingressgateway.loadBalancerSourceRanges[0]="136.162.0.0/16"
+  #  # Disable since we are using the keycloak ansible playbook short term
+  # - name: "cray-keycloak"
+  #   namespace: "services"
+  #   version: 4.7.0
+  #   waitFor:
+  #     pods:
+  #     - cray-keycloak
+  #   overrides:
+  #   - keycloak.keycloak.image.repository="{repos[docker]}/jboss/keycloak"
   - name: "cray-etcd-operator"
     namespace: "operators"
     version: 0.8.3
-    upgradeExisting: True
-    async: False
-    pods:
-    - cray-etcd-operator-etcd-operator-etcd-backup-operator
-    - cray-etcd-operator-etcd-operator-etcd-operator
-    - cray-etcd-operator-etcd-operator-etcd-restore-operator
+    waitFor:
+      pods:
+      - cray-etcd-operator-etcd-operator-etcd-backup-operator
+      - cray-etcd-operator-etcd-operator-etcd-operator
+      - cray-etcd-operator-etcd-operator-etcd-restore-operator
     overrides:
     - etcd-operator.etcdCluster.image.repository="{repos[docker]}/coreos/etcd"
     - etcd-operator.etcdOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.restoreOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.backupOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
-  - name: "cray-datastore"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: False
-    pods:
-    - cray-datastore
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-  - name: "cray-hms-mariadb"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: False
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-  - name: "cray-ars"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: False
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-    - cray-service.chart.name="{chart[name]}"
-    - cray-service.chart.version="{chart[version]}"
-  - name: "cray-hms-etcd"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: False
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-  - name: "cray-smd"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: False
-    pods:
-    - cray-smd
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-    - cray-service.chart.name="{chart[name]}"
-    - cray-service.chart.version="{chart[version]}"
-  - name: "cray-bss"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: False
-    pods:
-    - cray-bss
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-    - cray-service.chart.name="{chart[name]}"
-    - cray-service.chart.version="{chart[version]}"
-  - name: "cray-ams"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: False
-    pods:
-    - cray-ams
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-    - cray-service.chart.name="{chart[name]}"
-    - cray-service.chart.version="{chart[version]}"
-  - name: "cray-tms"
-    namespace: "services"
-    version: 1.0.0
-    upgradeExisting: True
-    async: True
-    pods:
-    - cray-tms
-    overrides:
-    - global.imageRepoPrefix="{repos[docker]}/"
-    - cray-service.chart.name="{chart[name]}"
-    - cray-service.chart.version="{chart[version]}"
