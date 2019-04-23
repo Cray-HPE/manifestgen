@@ -73,9 +73,7 @@ class Manifest(object):  # pylint: disable=old-style-class
 
 def validate_charts_path(chart_dir):
     """ Make sure path passed by user exists """
-    if not os.path.isdir(chart_dir):
-        return False
-    return True
+    return os.path.isdir(chart_dir)
 
 
 def find_charts(chart_dir):
