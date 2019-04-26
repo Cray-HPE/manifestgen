@@ -2,7 +2,9 @@
 import os
 import tempfile
 
+import semver
 import yamale
+
 from yamale.validators import DefaultValidators, Validator
 
 # Global Var
@@ -37,22 +39,16 @@ def _get_schema_filename(schema_ver):
 
 
 class Version(Validator):
-    """ Custom version validator.  Schema: int.int.int, i.e. 0.0.0 """
+    """ Custom Semver v2 validator."""
     tag = 'version'
 
     def _is_valid(self, value):
         # pylint: disable=broad-except
         value = '{}'.format(value)
-        ints = value.split('.')
-        if len(ints) != 3:
+        try:
+            semver.parse(value)
+        except Exception:  # pragma: NO COVER
             return False
-        for i in ints:
-            try:
-                i = int(i)
-            except Exception: # pragma: NO COVER
-                return False
-            if not isinstance(i, int): # pragma: NO COVER
-                return False
         return True
 
 
@@ -66,7 +62,8 @@ def validate(manifest_data):
         validators = DefaultValidators.copy()  # This is a dictionary
         validators[Version.tag] = Version
 
-        data = yamale.make_data(fp.name, parser='ruamel')[0]
-        schema_file = _get_schema_filename(data.get('schema', ''))
-        yamale.make_schema(schema_file, validators=validators, parser='ruamel')
-        return data
+        data = yamale.make_data(fp.name, parser='ruamel')
+        schema_file = _get_schema_filename(data[0].get('schema', ''))
+        s = yamale.make_schema(schema_file, validators=validators, parser='ruamel')
+        yamale.validate(s, data)
+        return manifest_data

@@ -6,6 +6,7 @@ import sys
 import os
 import argparse
 
+import semver
 from ruamel import yaml
 
 from manifestgen import validator
@@ -83,10 +84,15 @@ def find_charts(chart_dir):
         # Use this format to easily filter out files vs dirs
         break
     resp = {}
+
     for chart in charts:
         i = chart.split('-')
         version = i[-1].replace(CHART_PACKAGE_TYPE, '')
         name = '-'.join(i[:-1])
+        if resp.get(name):
+            # Make sure we don't overwrite with an older version
+            # if there are duplicate charts
+            version = semver.max_ver(version, resp[name]['version'])
         resp[name] = {'version': version}
     return resp
 
