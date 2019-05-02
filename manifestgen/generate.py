@@ -16,6 +16,7 @@ CHART_PACKAGE_TYPE = '.tgz'
 
 def get_args():
     """Get args"""
+    # pylint: disable=line-too-long
     parser = argparse.ArgumentParser(description='Generate manifest.')
     parser.add_argument('charts', nargs='?', metavar='BLOB', help='Path to chart packages.')
     parser.add_argument('--name', dest='name', help='Manifest name.')
@@ -24,7 +25,8 @@ def get_args():
     parser.add_argument('--docker-repo', help='Docker repo to install from.')
     parser.add_argument('--helm-repo', help='Chart repo to install from.')
     parser.add_argument('-o', '--out', help='Output file')
-    parser.add_argument('--all', default=False, action='store_true', help='Ignore local charts path (BLOB) and return the entire master manifest')
+    parser.add_argument('--all', default=False, action='store_true',
+                        help='Ignore local charts path (BLOB) and return the entire master manifest')
     parser.add_argument('--ignore-extra', default=False, action='store_true',
                         help='Don\'t error for extra charts that are in the master manifest.')
     return parser.parse_args()
