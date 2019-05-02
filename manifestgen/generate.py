@@ -17,13 +17,14 @@ CHART_PACKAGE_TYPE = '.tgz'
 def get_args():
     """Get args"""
     parser = argparse.ArgumentParser(description='Generate manifest.')
-    parser.add_argument('charts', metavar='BLOB', help='Path to chart packages.')
+    parser.add_argument('charts', nargs='?', metavar='BLOB', help='Path to chart packages.')
     parser.add_argument('--name', dest='name', help='Manifest name.')
     parser.add_argument('--fastfail', default=False, action='store_true',
                         help='Tell the manifest to fail on first error.')
     parser.add_argument('--docker-repo', help='Docker repo to install from.')
     parser.add_argument('--helm-repo', help='Chart repo to install from.')
     parser.add_argument('-o', '--out', help='Output file')
+    parser.add_argument('--all', default=False, action='store_true', help='Ignore local charts path (BLOB) and return the entire master manifest')
     parser.add_argument('--ignore-extra', default=False, action='store_true',
                         help='Don\'t error for extra charts that are in the master manifest.')
     return parser.parse_args()
@@ -112,30 +113,35 @@ def manifestgen(**args):
     if args.get('helm_repo') is not None:
         manifest.data['repositories']['helm'] = args['helm_repo']
 
-    chart_dir = args['charts']
-    all_charts = manifest.get_charts()
+    if not args.get('all', False):
 
-    if not validate_charts_path(chart_dir):
-        raise Exception("{} does not exist!".format(chart_dir))
 
-    blob_charts = find_charts(chart_dir)
+        chart_dir = args['charts']
+        all_charts = manifest.get_charts()
 
-    manifest_charts = []
-    for chart in all_charts:
-        c = blob_charts.get(chart['name'])
-        if c:
-            chart.update(c)
-            del blob_charts[chart['name']]
-            manifest_charts.append(chart)
+        if not validate_charts_path(chart_dir):
+            raise Exception("{} does not exist!".format(chart_dir))
 
-    if blob_charts and not args.get('ignore_extra'):
-        # Some charts exist that aren't in the master manifest
-        extra_charts = ", ".join(blob_charts.keys())
-        msg = "Some charts exist in the blob that don't exist in the master manifest: {}"
-        raise Exception(msg.format(extra_charts))
+        blob_charts = find_charts(chart_dir)
 
-    # Trim master chart to only include charts in blob
-    manifest.set_charts(manifest_charts)
+        manifest_charts = []
+        for chart in all_charts:
+            c = blob_charts.get(chart['name'])
+            if c:
+                chart.update(c)
+                del blob_charts[chart['name']]
+                manifest_charts.append(chart)
+
+        if blob_charts and not args.get('ignore_extra'):
+            # Some charts exist that aren't in the master manifest
+            extra_charts = ", ".join(blob_charts.keys())
+            msg = "Some charts exist in the blob that don't exist in the master manifest: {}"
+            raise Exception(msg.format(extra_charts))
+
+        # Trim master chart to only include charts in blob
+        manifest.set_charts(manifest_charts)
+
+
     # Make sure it passes schema check
     manifest.validate()
 
@@ -151,6 +157,9 @@ def manifestgen(**args):
 def main():
     """ Main entrypoint """
     args = get_args()
+    if args.charts is None and args.all is False:
+        raise Exception("A path to local charts or --all is required.")
+
     manifestgen(**vars(args))
     sys.exit(0)
 
