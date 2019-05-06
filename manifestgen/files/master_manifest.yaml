@@ -64,3 +64,10 @@ charts: # Will install/upgrade charts in the order below
       helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-rm-pals"
+    namespace: "services"
+    version: 0.0.1
+    waitFor:
+      helm: true
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
