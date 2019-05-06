@@ -57,3 +57,10 @@ charts: # Will install/upgrade charts in the order below
     - etcd-operator.etcdOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.restoreOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.backupOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
+  - name: "slingshot_controllers"
+    namespace: "services"
+    version: 1.0.1
+    waitFor:
+      helm: true
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
