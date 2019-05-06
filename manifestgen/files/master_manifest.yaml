@@ -57,6 +57,17 @@ charts: # Will install/upgrade charts in the order below
     - etcd-operator.etcdOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.restoreOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.backupOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
+  - name: "cray-postgres-operator"
+    namespace: "services"
+    version: 0.0.1
+    waitFor:
+      script:
+        command: >-
+          kubectl get crds | grep 'postgresqls.acid.zalan.do' | wc -l
+        return: "1"
+    overrides:
+    - postgres-operator.image.registry="{repos[docker]}"
+    - postgres-operator.config.docker_image="{repos[docker]}/acid/spilo-cdp-11:1.5-p70"
   - name: "slingshot_controllers"
     namespace: "services"
     version: 1.0.1
