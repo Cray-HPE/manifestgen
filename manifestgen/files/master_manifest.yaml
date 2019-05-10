@@ -68,7 +68,7 @@ charts: # Will install/upgrade charts in the order below
     overrides:
     - postgres-operator.image.registry="{repos[docker]}"
     - postgres-operator.config.docker_image="{repos[docker]}/acid/spilo-cdp-11:1.5-p70"
-  - name: "slingshot_controllers"
+  - name: "slingshot-controllers"
     namespace: "services"
     version: 1.0.1
     waitFor:
@@ -85,6 +85,13 @@ charts: # Will install/upgrade charts in the order below
   - name: "cray-rm-pals"
     namespace: "services"
     version: 0.0.1
+    waitFor:
+      helm: true
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-sds"
+    namespace: "services"
+    version: 1.0.0
     waitFor:
       helm: true
     overrides:
