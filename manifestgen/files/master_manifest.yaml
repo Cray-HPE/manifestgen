@@ -75,6 +75,13 @@ charts: # Will install/upgrade charts in the order below
       helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
+  - name: "slingshot-clis"
+    namespace: "services"
+    version: 1.0.2
+    waitFor:
+      helm: true
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-rm-pals"
     namespace: "services"
     version: 0.0.1
