@@ -70,14 +70,14 @@ charts: # Will install/upgrade charts in the order below
     - postgres-operator.config.docker_image="{repos[docker]}/acid/spilo-cdp-11:1.5-p70"
   - name: "slingshot-controllers"
     namespace: "services"
-    version: 1.0.1
+    version: 1.0.4
     waitFor:
       helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "slingshot-clis"
     namespace: "services"
-    version: 1.0.2
+    version: 1.0.4
     waitFor:
       helm: true
     overrides:
