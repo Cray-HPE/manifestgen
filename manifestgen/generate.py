@@ -5,12 +5,13 @@
 import sys
 import os
 import argparse
+import re
 
 import semver
 from ruamel import yaml
+import requests
 
 from manifestgen import validator
-
 
 CHART_PACKAGE_TYPE = '.tgz'
 
@@ -18,15 +19,13 @@ def get_args():
     """Get args"""
     # pylint: disable=line-too-long
     parser = argparse.ArgumentParser(description='Generate manifest.')
-    parser.add_argument('charts', nargs='?', metavar='BLOB', help='Path to chart packages.')
+    parser.add_argument('--charts-path', metavar='BLOB', help='Path to chart packages. One of charts-path or charts-repo must be provided.')
     parser.add_argument('--name', dest='name', help='Manifest name.')
     parser.add_argument('--fastfail', default=False, action='store_true',
                         help='Tell the manifest to fail on first error.')
-    parser.add_argument('--docker-repo', help='Docker repo to install from.')
-    parser.add_argument('--helm-repo', help='Chart repo to install from.')
+    parser.add_argument('--images-registry', help='Docker registry where images reside.')
+    parser.add_argument('--charts-repo', help='Repo where charts reside. One of charts-path or charts-repo must be provided.')
     parser.add_argument('-o', '--out', help='Output file')
-    parser.add_argument('--all', default=False, action='store_true',
-                        help='Ignore local charts path (BLOB) and return the entire master manifest')
     parser.add_argument('--ignore-extra', default=False, action='store_true',
                         help='Don\'t error for extra charts that are in the master manifest.')
     return parser.parse_args()
@@ -79,25 +78,38 @@ def validate_charts_path(chart_dir):
     """ Make sure path passed by user exists """
     return os.path.isdir(chart_dir)
 
+def get_available_charts(args):
+    """ Get all available latest-version charts either from the local blob or charts repo """
+    available_charts = {}
 
-def find_charts(chart_dir):
-    """ Get all the charts in the directory """
-    for _, _, files in os.walk(chart_dir):
-        charts = [f for f in files if f.endswith(CHART_PACKAGE_TYPE)]
-        # Use this format to easily filter out files vs dirs
-        break
-    resp = {}
+    if args.get('charts_repo') is not None:
+        charts_repo = args.get('charts_repo')
+        charts_repo = re.sub(r"/$", "", charts_repo)
 
-    for chart in charts:
-        i = chart.split('-')
-        version = i[-1].replace(CHART_PACKAGE_TYPE, '')
-        name = '-'.join(i[:-1])
-        if resp.get(name):
-            # Make sure we don't overwrite with an older version
-            # if there are duplicate charts
-            version = semver.max_ver(version, resp[name]['version'])
-        resp[name] = {'version': version}
-    return resp
+        charts_json = requests.get('{}/api/charts'.format(charts_repo))
+        charts_json = charts_json.json()
+
+        for chart_name in charts_json:
+            for version in charts_json[chart_name]:
+                if chart_name not in available_charts.keys():
+                    available_charts[chart_name] = '0.0.0'
+                available_charts[chart_name] = semver.max_ver(
+                    available_charts[chart_name], str(version['version']))
+    else:
+        for _, _, files in os.walk(args.get('charts_path')):
+            charts = [f for f in files if f.endswith(CHART_PACKAGE_TYPE)]
+            # Use this format to easily filter out files vs dirs
+            break
+
+        for chart in charts:
+            parts = chart.split('-')
+            version = parts[-1].replace(CHART_PACKAGE_TYPE, '')
+            name = '-'.join(parts[:-1])
+            if name not in available_charts.keys():
+                available_charts[name] = '0.0.0'
+            available_charts[name] = semver.max_ver(available_charts[name], version)
+
+    return available_charts
 
 
 def manifestgen(**args):
@@ -106,43 +118,41 @@ def manifestgen(**args):
                              'files', 'master_manifest.yaml')
     manifest = Manifest(mani_path)
 
+    if (args.get('charts_repo') is not None) and (args.get('charts_path') is not None):
+        raise Exception(
+            'Both charts-repo and charts-path arguments were provided, please use one or the other')
+    if (args.get('charts_repo') is None) and (args.get('charts_path') is None):
+        raise Exception('Either the charts-repo or charts-path argument must be provided')
+
     if args.get('name') is not None:
         manifest.data['name'] = args['name']
     if args.get('fastfail') is not None:
         manifest.data['failOnFirstError'] = args['fastfail']
-    if args.get('docker_repo') is not None:
-        manifest.data['repositories']['docker'] = args['docker_repo']
-    if args.get('helm_repo') is not None:
-        manifest.data['repositories']['helm'] = args['helm_repo']
+    if args.get('images_registry') is not None:
+        manifest.data['repositories']['docker'] = args['images_registry']
+    if args.get('charts_repo') is not None:
+        manifest.data['repositories']['helm'] = args['charts_repo']
 
-    if not args.get('all', False):
+    master_manifest_charts = manifest.get_charts()
+    available_charts = get_available_charts(args)
 
+    filtered_charts = []
+    for master_manifest_chart in master_manifest_charts:
+        available_chart_version = available_charts.get(master_manifest_chart['name'])
+        if available_chart_version:
+            if 'version' not in master_manifest_chart.keys():
+                master_manifest_chart['version'] = available_chart_version
+            filtered_charts.append(master_manifest_chart)
+            del available_charts[master_manifest_chart['name']]
 
-        chart_dir = args['charts']
-        all_charts = manifest.get_charts()
+    if available_charts and not args.get('ignore_extra'):
+        # Some charts exist that aren't in the master manifest
+        extra_charts = ", ".join(available_charts.keys())
+        msg = "Some charts exist in the blob that don't exist in the master manifest: {}"
+        raise Exception(msg.format(extra_charts))
 
-        if not validate_charts_path(chart_dir):
-            raise Exception("{} does not exist!".format(chart_dir))
-
-        blob_charts = find_charts(chart_dir)
-
-        manifest_charts = []
-        for chart in all_charts:
-            c = blob_charts.get(chart['name'])
-            if c:
-                chart.update(c)
-                del blob_charts[chart['name']]
-                manifest_charts.append(chart)
-
-        if blob_charts and not args.get('ignore_extra'):
-            # Some charts exist that aren't in the master manifest
-            extra_charts = ", ".join(blob_charts.keys())
-            msg = "Some charts exist in the blob that don't exist in the master manifest: {}"
-            raise Exception(msg.format(extra_charts))
-
-        # Trim master chart to only include charts in blob
-        manifest.set_charts(manifest_charts)
-
+    # Set our generated manifest with the appropriate/filtered list of charts/versions
+    manifest.set_charts(filtered_charts)
 
     # Make sure it passes schema check
     manifest.validate()
