@@ -27,7 +27,7 @@ else
 fi
 
 
-cli_run=$($CLI tests/files/)
+cli_run=$($CLI --charts-path tests/files/)
 if [[ $? == 0 ]]; then
     echo "PASS: manifestgen tests/files/ returns successfully"
 else
