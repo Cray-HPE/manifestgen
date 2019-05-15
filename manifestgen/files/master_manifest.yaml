@@ -10,6 +10,8 @@ charts: # Will install/upgrade charts in the order below
   - name: "cray-drydock"
     namespace: "loftsman"
     version: 1.0.2
+    overrides:
+    - imagesHost="{repos[docker]}"
   - name: "cray-istio-init"
     namespace: "istio-system"
     version: 1.1.3
