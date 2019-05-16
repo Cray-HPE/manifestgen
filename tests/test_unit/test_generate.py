@@ -7,8 +7,18 @@ from ruamel import yaml
 
 from manifestgen import generate
 
+def test_generate_charts_path_basic():
+    """ Test `manifestgen` with only charts-path """
+    # pylint: disable=protected-access
+
+    args = {
+        'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files')
+    }
+    generate.manifestgen(**args)
+    assert True is True # Just to make sure we got here
+
 def test_generate_charts_path():
-    """ Test `manifestgen` """
+    """ Test `manifestgen` for charts-path """
     # pylint: disable=protected-access
 
     manifest_name = 'testing'
@@ -33,7 +43,7 @@ def test_generate_charts_path():
         assert c['name'] in ['cray-istio', 'cray-etcd-operator']
 
 def test_generate_charts_repo():
-    """ Test `manifestgen` """
+    """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
     manifest_name = 'testing'

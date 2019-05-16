@@ -25,3 +25,12 @@ else
     echo $cli_help
     exit 1
 fi
+
+cli_run=$($CLI --charts-path tests/files/)
+if [[ $? == 0 ]]; then
+    echo "PASS: manifestgen --charts-path tests/files/ returns successfully"
+else
+    echo "FAIL: manifestgen --charts-path tests/files/ returns an error."
+    echo $cli_run
+    exit 1
+fi
