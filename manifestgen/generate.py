@@ -169,8 +169,6 @@ def manifestgen(**args):
 def main():
     """ Main entrypoint """
     args = get_args()
-    if args.charts is None and args.all is False:
-        raise Exception("A path to local charts or --all is required.")
 
     manifestgen(**vars(args))
     sys.exit(0)
