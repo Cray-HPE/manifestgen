@@ -6,13 +6,13 @@ failOnFirstError: True
 repositories:
   docker: registry.local
   helm: charts.local
-charts: # Will install/upgrade charts in the order below
+charts: # Will install/upgrade charts in the order below, latest versions of charts are auto-detected at manifestgen time if explicit version is not provided here
   - name: "cray-drydock"
     namespace: "loftsman"
-    version: 1.0.0
+    overrides:
+    - imagesHost="{repos[docker]}"
   - name: "cray-istio-init"
     namespace: "istio-system"
-    version: 1.1.3
     waitFor:
       script:
         command: >-
@@ -22,7 +22,6 @@ charts: # Will install/upgrade charts in the order below
     - global.hub="{repos[docker]}/istio"
   - name: "cray-istio"
     namespace: "istio-system"
-    version: 1.1.3
     waitFor:
       pods:
       - istio-pilot
@@ -34,19 +33,8 @@ charts: # Will install/upgrade charts in the order below
     overrides:
     - global.hub="{repos[docker]}/istio"
     - istio.prometheus.hub="{repos[docker]}/prom"
-  #  - istio.gateways.istio-ingressgateway.loadBalancerSourceRanges[0]="136.162.0.0/16"
-  #  # Disable since we are using the keycloak ansible playbook short term
-  # - name: "cray-keycloak"
-  #   namespace: "services"
-  #   version: 4.7.0
-  #   waitFor:
-  #     pods:
-  #     - cray-keycloak
-  #   overrides:
-  #   - keycloak.keycloak.image.repository="{repos[docker]}/jboss/keycloak"
   - name: "cray-etcd-operator"
     namespace: "operators"
-    version: 0.8.4
     waitFor:
       pods:
       - cray-etcd-operator-etcd-operator-etcd-backup-operator
@@ -59,7 +47,6 @@ charts: # Will install/upgrade charts in the order below
     - etcd-operator.backupOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
   - name: "cray-postgres-operator"
     namespace: "services"
-    version: 0.0.1
     waitFor:
       script:
         command: >-
@@ -70,28 +57,30 @@ charts: # Will install/upgrade charts in the order below
     - postgres-operator.config.docker_image="{repos[docker]}/acid/spilo-cdp-11:1.5-p70"
   - name: "slingshot-controllers"
     namespace: "services"
-    version: 1.0.1
     waitFor:
       helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "slingshot-clis"
     namespace: "services"
-    version: 1.0.2
     waitFor:
       helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-rm-pals"
     namespace: "services"
-    version: 0.0.1
     waitFor:
       helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-sds"
     namespace: "services"
-    version: 1.0.0
+    waitFor:
+      helm: true
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-replicant"
+    namespace: "services"
     waitFor:
       helm: true
     overrides:
