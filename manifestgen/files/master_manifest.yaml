@@ -55,6 +55,26 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - postgres-operator.image.registry="{repos[docker]}"
     - postgres-operator.config.docker_image="{repos[docker]}/acid/spilo-cdp-11:1.5-p70"
+  - name: "cray-kafka-operator"
+    namespace: "services"
+    waitFor:
+      script:
+        command: >-
+          kubectl get crds | grep 'kafka.strimzi.io' | wc -l
+        return: "6"
+    overrides:
+    - strimzi-kafka-operator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.zookeeper.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafka.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafkaConnect.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafkaConnects2i.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.topicOperator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.userOperator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafkaInit.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarZookeeper.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarKafka.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarEntityOperator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarKakafkaMirrorMakerfka.image.repository="{repos[docker]}/strimzi"
   - name: "slingshot-controllers"
     namespace: "services"
     waitFor:
