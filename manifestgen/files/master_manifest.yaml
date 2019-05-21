@@ -58,10 +58,7 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
   - name: "cray-kafka-operator"
     namespace: "services"
     waitFor:
-      script:
-        command: >-
-          kubectl get crds | grep 'kafka.strimzi.io' | wc -l
-        return: "6"
+      helm: true
     overrides:
     - strimzi-kafka-operator.image.repository="{repos[docker]}/strimzi"
     - strimzi-kafka-operator.zookeeper.image.repository="{repos[docker]}/strimzi"
