@@ -1,0 +1,26 @@
+// Copyright 2019 Cray Inc. All Rights Reserved.
+
+@Library("dst-shared") _
+
+pipeline {
+
+  agent { node { label 'dstbuild' } }
+
+  stages {
+
+    stage('Build') {
+      steps {
+        sh "docker build -t dtr.dev.cray.com/craypc/ahoy-manifestgen:latest -f Dockerfile.ahoy ."
+      }
+    }
+
+    stage('Publish') {
+      when { branch "master" }
+      steps {
+        sh "docker push dtr.dev.cray.com/craypc/ahoy-manifestgen:latest"
+      }
+    }
+
+  }
+
+}
