@@ -1,0 +1,8 @@
+FROM python:2-alpine
+
+RUN apk add --no-cache py-pip python-dev build-base
+
+COPY . /manifestgen
+WORKDIR /manifestgen
+RUN pip install --ignore-installed -r requirements.txt
+RUN python setup.py install
