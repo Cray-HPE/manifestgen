@@ -83,7 +83,7 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     waitFor:
       helm: true
     overrides:
-    - cray-service.imagesHost="{repos[docker]}"
+    - imagesHost="{repos[docker]}"
   - name: "cray-rm-pals"
     namespace: "services"
     waitFor:
