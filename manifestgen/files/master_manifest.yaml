@@ -74,31 +74,21 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - strimzi-kafka-operator.tlsSidecarKakafkaMirrorMakerfka.image.repository="{repos[docker]}/strimzi"
   - name: "slingshot-controllers"
     namespace: "services"
-    waitFor:
-      helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "slingshot-clis"
     namespace: "services"
-    waitFor:
-      helm: true
     overrides:
     - imagesHost="{repos[docker]}"
   - name: "cray-rm-pals"
     namespace: "services"
-    waitFor:
-      helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-sds"
     namespace: "services"
-    waitFor:
-      helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-replicant"
     namespace: "services"
-    waitFor:
-      helm: true
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
