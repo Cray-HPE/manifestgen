@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=$(cat version).$BUILD_NUMBER
+VERSION=$(cat version)
 
 RPM=$(ls -l RPMS |grep rpm | grep -v src | awk '{print $NF}')
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="$(cat ./version).$BUILD_NUMBER"
+VERSION="$(cat ./version)"
 
 echo $VERSION > build_version
 
