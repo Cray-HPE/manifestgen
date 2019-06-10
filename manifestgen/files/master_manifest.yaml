@@ -45,6 +45,13 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - etcd-operator.etcdOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.restoreOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
     - etcd-operator.backupOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
+  - name: "cray-vault-operator"
+    namespace: "operators"
+    waitFor:
+      pods:
+      - cray-vault-operator
+    overrides:
+    - vault-operator.image.repository="{repos[docker]}/banzaicloud/vault-operator"
   - name: "cray-postgres-operator"
     namespace: "services"
     waitFor:
@@ -72,6 +79,10 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - strimzi-kafka-operator.tlsSidecarKafka.image.repository="{repos[docker]}/strimzi"
     - strimzi-kafka-operator.tlsSidecarEntityOperator.image.repository="{repos[docker]}/strimzi"
     - strimzi-kafka-operator.tlsSidecarKakafkaMirrorMakerfka.image.repository="{repos[docker]}/strimzi"
+  - name: "cray-vault"
+    namespace: "vault"
+    overrides:
+    - imagesHost="{repos[docker]}"
   - name: "slingshot-controllers"
     namespace: "services"
     overrides:
