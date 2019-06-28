@@ -17,6 +17,27 @@ def test_generate_charts_path_basic():
     generate.manifestgen(**args)
     assert True is True # Just to make sure we got here
 
+
+def test_custom_values():
+    """ Test `manifestgen` with only charts-path """
+    # pylint: disable=protected-access, superfluous-parens
+
+    curr = os.path.dirname(os.path.realpath(__file__))
+    x = generate.get_local_values(os.path.join(curr, '../files/'), 'test')
+    print(x)
+    assert x == {'foo': {'bar': 'baz'}}
+
+
+def test_custom_values_dne():
+    """ Test `manifestgen` with only charts-path """
+    # pylint: disable=protected-access, superfluous-parens
+
+    curr = os.path.dirname(os.path.realpath(__file__))
+    x = generate.get_local_values(os.path.join(curr, '../files/'), 'bad')
+    print(x)
+    assert x is None
+
+
 def test_generate_charts_path():
     """ Test `manifestgen` for charts-path """
     # pylint: disable=protected-access
