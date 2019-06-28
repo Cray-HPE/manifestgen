@@ -22,6 +22,7 @@ def get_args(): # pragma: NO COVER
     parser.add_argument('--values-path', metavar='PATH', help='Path to chart_name.yaml files to be passed as values.yaml to charts.')
     parser.add_argument('--charts-path', metavar='BLOB', help='Path to chart packages. One of charts-path or charts-repo must be provided.')
     parser.add_argument('--name', dest='name', help='Manifest name.')
+    parser.add_argument('--schema', dest='schema', help='Manifest schema to generate.', default='v2')
     parser.add_argument('--fastfail', default=False, action='store_true',
                         help='Tell the manifest to fail on first error.')
     parser.add_argument('--images-registry', metavar='URL', help='Docker registry where images reside.')
@@ -139,6 +140,8 @@ def manifestgen(**args):
 
     if args.get('name') is not None:
         manifest.data['name'] = args['name']
+    if args.get('schema') is not None:
+        manifest.data['schema'] = args['schema']
     if args.get('fastfail') is not None:
         manifest.data['failOnFirstError'] = args['fastfail']
     if args.get('images_registry') is not None:
