@@ -15,19 +15,22 @@ from manifestgen import validator
 
 CHART_PACKAGE_TYPE = '.tgz'
 
-def get_args():
+def get_args(): # pragma: NO COVER
     """Get args"""
     # pylint: disable=line-too-long
     parser = argparse.ArgumentParser(description='Generate manifest.')
+    parser.add_argument('--values-path', metavar='PATH', help='Path to chart_name.yaml files to be passed as values.yaml to charts.')
     parser.add_argument('--charts-path', metavar='BLOB', help='Path to chart packages. One of charts-path or charts-repo must be provided.')
     parser.add_argument('--name', dest='name', help='Manifest name.')
+    parser.add_argument('--schema', dest='schema', help='Manifest schema to generate.', default='v2')
     parser.add_argument('--fastfail', default=False, action='store_true',
                         help='Tell the manifest to fail on first error.')
-    parser.add_argument('--images-registry', help='Docker registry where images reside.')
-    parser.add_argument('--charts-repo', help='Repo where charts reside. One of charts-path or charts-repo must be provided.')
-    parser.add_argument('-o', '--out', help='Output file')
+    parser.add_argument('--images-registry', metavar='URL', help='Docker registry where images reside.')
+    parser.add_argument('--charts-repo', metavar='URL', help='Repo where charts reside. One of charts-path or charts-repo must be provided.')
+    parser.add_argument('-o', '--out', metavar='FILE', help='Output file')
     parser.add_argument('--ignore-extra', default=False, action='store_true',
                         help='Don\'t error for extra charts that are in the master manifest.')
+    parser.add_argument('--validate', metavar='PATH', help='Validate an existing manifest file.')
     return parser.parse_args()
 
 
@@ -51,6 +54,10 @@ class Manifest(object):  # pylint: disable=old-style-class
             data = yaml.safe_load(fp)
         self.data = data
         self.yaml = None
+        self.schema = data['schema']
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.schema)
 
     def _to_string(self, data):
         self.yaml = data
@@ -73,10 +80,6 @@ class Manifest(object):  # pylint: disable=old-style-class
         yaml.YAML().dump(self.data, _NullStream(), transform=self._to_string)
         return self.yaml
 
-
-def validate_charts_path(chart_dir):
-    """ Make sure path passed by user exists """
-    return os.path.isdir(chart_dir)
 
 def get_available_charts(args):
     """ Get all available latest-version charts either from the local blob or charts repo """
@@ -112,8 +115,19 @@ def get_available_charts(args):
     return available_charts
 
 
+def get_local_values(a_dir, chart_name):
+    """ Open values file if it exists and return the yaml as a dict """
+    value_file = os.path.join(a_dir, '{}.yaml'.format(chart_name))
+    if os.path.isfile(value_file):
+        with open(value_file) as fp:
+            return yaml.safe_load(fp)
+    return None
+
+
+
 def manifestgen(**args):
     """ Generate the manifest """
+    # pylint: disable=too-many-branches
     mani_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
                              'files', 'master_manifest.yaml')
     manifest = Manifest(mani_path)
@@ -126,12 +140,16 @@ def manifestgen(**args):
 
     if args.get('name') is not None:
         manifest.data['name'] = args['name']
+    if args.get('schema') is not None:
+        manifest.data['schema'] = args['schema']
     if args.get('fastfail') is not None:
         manifest.data['failOnFirstError'] = args['fastfail']
     if args.get('images_registry') is not None:
         manifest.data['repositories']['docker'] = args['images_registry']
     if args.get('charts_repo') is not None:
         manifest.data['repositories']['helm'] = args['charts_repo']
+
+    values_dir = args.get('values_path')
 
     master_manifest_charts = manifest.get_charts()
     available_charts = get_available_charts(args)
@@ -142,6 +160,10 @@ def manifestgen(**args):
         if available_chart_version:
             if 'version' not in master_manifest_chart.keys():
                 master_manifest_chart['version'] = available_chart_version
+            if values_dir and manifest.schema != 'v1':
+                values = get_local_values(values_dir, master_manifest_chart['name'])
+                if values is not None:
+                    master_manifest_chart['values'] = values
             filtered_charts.append(master_manifest_chart)
             del available_charts[master_manifest_chart['name']]
 
@@ -166,13 +188,17 @@ def manifestgen(**args):
         print(out_yaml)
 
 
-def main():
+def main(): # pragma: NO COVER
     """ Main entrypoint """
     args = get_args()
 
-    manifestgen(**vars(args))
+    if args.validate is not None:
+        manifest = Manifest(args.validate)
+        manifest.validate()
+    else:
+        manifestgen(**vars(args))
     sys.exit(0)
 
 
-if getattr(sys, 'frozen', False):
+if getattr(sys, 'frozen', False): # pragma: NO COVER
     main()
