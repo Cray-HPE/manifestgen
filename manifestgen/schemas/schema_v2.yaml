@@ -1,0 +1,25 @@
+schema: enum('v2')
+name: str()
+version: version()
+failOnFirstError: bool()
+repositories:
+    docker: str()
+    helm: str()
+charts: list(include('chart'))
+---
+chart:
+  name: str()
+  namespace: str()
+  version: version()
+  waitFor: include('waitFor', required=False)
+  overrides: list(required=False)
+  values: map(required=False)
+---
+waitFor:
+  helm: bool(required=False)
+  pods: list(required=False)
+  script: include('script', required=False)
+---
+script:
+  command: str()
+  return: str()

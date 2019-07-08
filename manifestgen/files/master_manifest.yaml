@@ -1,5 +1,5 @@
 ---
-schema: v1
+schema: v2
 name: cray-loftsman-manifest
 version: 1.0.0
 failOnFirstError: True
@@ -33,6 +33,9 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - global.hub="{repos[docker]}/istio"
     - istio.prometheus.hub="{repos[docker]}/prom"
+    - istio.grafana.image.repository="{repos[docker]}/grafana/grafana"
+    - istio.tracing.jaeger.hub="{repos[docker]}/jaegertracing"
+    - istio.kiali.hub="{repos[docker]}/kiali"
   - name: "cray-etcd-operator"
     namespace: "operators"
     waitFor:
