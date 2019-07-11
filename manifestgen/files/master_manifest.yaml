@@ -125,6 +125,10 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - cray-service.imagesHost="{repos[docker]}"
 
   # HMS
+  - name: "cray-datastore"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
   - name: "cray-hms-postgresql"
     namespace: "services"
     overrides:
