@@ -99,14 +99,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
-  - name: "cray-datastore"
-    namespace: "services"
-    overrides:
-      - imagesHost="{repos[docker]}"
-  - name: "cray-ars"
-    namespace: "services"
-    overrides:
-      - cray-service.imagesHost="{repos[docker]}"
 
   # HMS
   - name: "cray-hms-postgresql"
@@ -159,6 +151,14 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       - cray-service.imagesHost="{repos[docker]}"
       - imagesHost="{repos[docker]}"
   - name: "cray-hms-smd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hbtd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hmnfd"
     namespace: "services"
     overrides:
       - cray-service.imagesHost="{repos[docker]}"
