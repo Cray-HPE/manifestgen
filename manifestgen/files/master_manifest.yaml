@@ -36,6 +36,27 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - istio.grafana.image.repository="{repos[docker]}/grafana/grafana"
     - istio.tracing.jaeger.hub="{repos[docker]}/jaegertracing"
     - istio.kiali.hub="{repos[docker]}/kiali"
+  - name: "cray-prometheus-operator"
+    namespace: "kube-monitoring"
+    version: 0.1.0
+    waitFor:
+      script:
+        command: >-
+          kubectl get crds | grep '.monitoring.coreos.com' | wc -l
+        return: "5"
+    overrides:
+      - prometheus-operator.alertmanager.alertmanagerSpec.image.repository="{repos[docker]}/prometheus/alertmanager"
+      - prometheus-operator.prometheusOperator.image.repository="{repos[docker]}/coreos/prometheus-operator"
+      - prometheus-operator.prometheusOperator.configmapReloadImage.repository="{repos[docker]}/coreos/configmap-reload"
+      - prometheus-operator.prometheusOperator.prometheusConfigReloaderImage.repository="{repos[docker]}/coreos/prometheus-config-reloader"
+      - prometheus-operator.prometheusOperator.hyperkubeImage.repository="{repos[docker]}/k8s.gcr.io/hyperkube"
+      - prometheus-operator.prometheus.prometheusSpec.image.repository="{repos[docker]}/prometheus/prometheus"
+      - prometheus-operator.kube-state-metrics.image.repository="{repos[docker]}/coreos/kube-state-metrics"
+      - prometheus-operator.grafana.image.repository="{repos[docker]}/grafana/grafana"
+      - prometheus-operator.grafana.initChownData.image.repository="{repos[docker]}/cache/busybox"
+      - prometheus-operator.grafana.sidecar.image="{repos[docker]}/kiwigrid/k8s-sidecar:0.0.16"
+      - prometheus-operator.grafana.downloadDashboardsImage.repository="{repos[docker]}/appropriate/curl"
+      - prometheus-operator.prometheus-node-exporter.image.repository="{repos[docker]}/prometheus/node-exporter"
   - name: "cray-etcd-operator"
     namespace: "operators"
     waitFor:
@@ -99,6 +120,78 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-replicant"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # HMS
+  - name: "cray-datastore"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-postgresql"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-mariadb"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-db-util"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-api"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-job-api"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-service"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-loader"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-bss"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-capmc"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-fw-update"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-meds"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-reds"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-smd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hbtd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hmnfd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+
+  - name: "cray-tokens"
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
