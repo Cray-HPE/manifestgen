@@ -57,6 +57,11 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       - prometheus-operator.grafana.sidecar.image="{repos[docker]}/kiwigrid/k8s-sidecar:0.0.16"
       - prometheus-operator.grafana.downloadDashboardsImage.repository="{repos[docker]}/appropriate/curl"
       - prometheus-operator.prometheus-node-exporter.image.repository="{repos[docker]}/prometheus/node-exporter"
+  - name: "cray-ceph-monitoring"
+    namespace: "ceph-monitoring"
+    version: 0.1.0
+    overrides:
+      - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
   - name: "cray-etcd-operator"
     namespace: "operators"
     waitFor:
