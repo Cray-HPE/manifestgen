@@ -120,6 +120,10 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - imagesHost="{repos[docker]}"
+  - name: "slingshot-kafka"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-rm-pals"
     namespace: "services"
     overrides:
