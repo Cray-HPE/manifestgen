@@ -19,7 +19,7 @@ DEFAULT_MANIFEST = os.path.join(os.path.realpath(os.path.dirname(__file__)),
 
 def get_args(): # pragma: NO COVER
     """Get args"""
-    # pylint: disable=line-too-long
+    # pylint: disable=line-too-long, fixme
     parser = argparse.ArgumentParser(description='Generate manifest.')
     parser.add_argument('--values-path', metavar='PATH', help='Path to chart_name.yaml files to be passed as values.yaml to charts.')
     parser.add_argument('--charts-path', metavar='BLOB/URL', help='Path to chart packages or url to charts repo.')
@@ -100,7 +100,7 @@ def get_available_charts(charts_path):
         try:
             charts_json = requests.get('{}/api/charts'.format(charts_path))
             charts_json = charts_json.json()
-        except Exception as e:
+        except Exception:
             raise Exception("Unable to get chart repo info at: {0}".format(charts_path))
 
         for chart_name in charts_json:
