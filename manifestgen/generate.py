@@ -215,7 +215,7 @@ def main(): # pragma: NO COVER
         if (args.get('charts_path') is None):
             raise Exception('The charts-path argument must be provided')
 
-        manifestgen(**vars(args))
+        manifestgen(**args)
     sys.exit(0)
 
 
