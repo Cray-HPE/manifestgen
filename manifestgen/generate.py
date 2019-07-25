@@ -101,7 +101,7 @@ def get_available_charts(charts_path):
             charts_json = requests.get('{}/api/charts'.format(charts_path))
             charts_json = charts_json.json()
         except Exception:
-            raise Exception("Unable to get chart repo info at: {0}".format(charts_path))
+            raise IOError("Unable to get chart repo info at: {0}".format(charts_path))
 
         for chart_name in charts_json:
             for version in charts_json[chart_name]:
@@ -110,9 +110,9 @@ def get_available_charts(charts_path):
                 available_charts[chart_name] = semver.max_ver(
                     available_charts[chart_name], str(version['version']))
     else:
-        if os.path.isfile(charts_path):
+        if not os.path.isdir(charts_path):
             msg = "Expected directory of charts, not file."
-            raise Exception(msg)
+            raise IOError(msg)
 
         for _, _, files in os.walk(charts_path):
             charts = [f for f in files if f.endswith(CHART_PACKAGE_TYPE)]
