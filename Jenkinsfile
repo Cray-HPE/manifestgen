@@ -5,4 +5,5 @@
 rpmBuild(
     channel: "casm-cloud-alerts",
     product: "shasta-standard,shasta-premium"
+    target_node: "ncn"
 )
