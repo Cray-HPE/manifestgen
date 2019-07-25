@@ -38,7 +38,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - istio.kiali.hub="{repos[docker]}/kiali"
   - name: "cray-prometheus-operator"
     namespace: "kube-monitoring"
-    version: 0.1.0
     waitFor:
       script:
         command: >-
@@ -59,7 +58,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       - prometheus-operator.prometheus-node-exporter.image.repository="{repos[docker]}/prometheus/node-exporter"
   - name: "cray-ceph-monitoring"
     namespace: "ceph-monitoring"
-    version: 0.1.0
     overrides:
       - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
   - name: "cray-etcd-operator"
