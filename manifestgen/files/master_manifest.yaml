@@ -131,6 +131,12 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
 
+  # CRUS
+  -name: cray-crus
+   namespace: "services"
+   overrides:
+   - cray-service.imagesHost="{repos[docker]}"
+
   # HMS
   - name: "cray-datastore"
     namespace: "services"
