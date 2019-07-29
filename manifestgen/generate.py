@@ -207,7 +207,8 @@ def main(): # pragma: NO COVER
         manifest = Manifest(args['validate'])
         manifest.validate()
     else:
-        args['charts_path'] = args.get('charts_path', args.get('charts_repo'))
+        if args.get('charts_path') is None:
+            args['charts_path'] = args.get('charts_repo')
 
         if 'charts_repo' in args:
             del args['charts_repo']
