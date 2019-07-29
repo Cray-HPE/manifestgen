@@ -14,22 +14,29 @@ import requests
 from manifestgen import validator
 
 CHART_PACKAGE_TYPE = '.tgz'
+DEFAULT_MANIFEST = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                                'files', 'master_manifest.yaml')
 
 def get_args(): # pragma: NO COVER
     """Get args"""
-    # pylint: disable=line-too-long
+    # pylint: disable=line-too-long, fixme
     parser = argparse.ArgumentParser(description='Generate manifest.')
     parser.add_argument('--values-path', metavar='PATH', help='Path to chart_name.yaml files to be passed as values.yaml to charts.')
-    parser.add_argument('--charts-path', metavar='BLOB', help='Path to chart packages. One of charts-path or charts-repo must be provided.')
+    parser.add_argument('--charts-path', metavar='BLOB/URL', help='Path to chart packages or url to charts repo.')
     parser.add_argument('--name', dest='name', help='Manifest name.')
     parser.add_argument('--schema', dest='schema', help='Manifest schema to generate.', default='v2')
     parser.add_argument('--fastfail', default=False, action='store_true',
                         help='Tell the manifest to fail on first error.')
     parser.add_argument('--images-registry', metavar='URL', help='Docker registry where images reside.')
-    parser.add_argument('--charts-repo', metavar='URL', help='Repo where charts reside. One of charts-path or charts-repo must be provided.')
+    parser.add_argument('--charts-repo', metavar='URL', help='Deprecated. This will be removed in future releases.')
+    # TODO: Set default to baked in manifest for now. When all tools migrate to external manifest, remove the default
+    # and no longer bake manifest in.
+    parser.add_argument('-i', '--in', metavar='FILE', help='Input file', default=DEFAULT_MANIFEST)
     parser.add_argument('-o', '--out', metavar='FILE', help='Output file')
-    parser.add_argument('--ignore-extra', default=False, action='store_true',
-                        help='Don\'t error for extra charts that are in the master manifest.')
+    parser.add_argument('--ignore-extra', default=True, action='store_true',
+                        help='Deprecated. This will be removed in future releases.')
+    parser.add_argument('--version-lock', default=False, action='store_true',
+                        help='Do not update chart versions that exist in master manifest (default: %(default)s).')
     parser.add_argument('--validate', metavar='PATH', help='Validate an existing manifest file.')
     return parser.parse_args()
 
@@ -81,16 +88,20 @@ class Manifest(object):  # pylint: disable=old-style-class
         return self.yaml
 
 
-def get_available_charts(args):
+def get_available_charts(charts_path):
     """ Get all available latest-version charts either from the local blob or charts repo """
     available_charts = {}
 
-    if args.get('charts_repo') is not None:
-        charts_repo = args.get('charts_repo')
-        charts_repo = re.sub(r"/$", "", charts_repo)
+    charts_path = os.path.expanduser(charts_path)
 
-        charts_json = requests.get('{}/api/charts'.format(charts_repo))
-        charts_json = charts_json.json()
+    if not os.path.exists(charts_path): # assume URL if doesn't exist
+        charts_path = re.sub(r"/$", "", charts_path)
+
+        try:
+            charts_json = requests.get('{}/api/charts'.format(charts_path))
+            charts_json = charts_json.json()
+        except Exception:
+            raise IOError("Unable to get chart repo info at: {0}".format(charts_path))
 
         for chart_name in charts_json:
             for version in charts_json[chart_name]:
@@ -99,7 +110,11 @@ def get_available_charts(args):
                 available_charts[chart_name] = semver.max_ver(
                     available_charts[chart_name], str(version['version']))
     else:
-        for _, _, files in os.walk(args.get('charts_path')):
+        if not os.path.isdir(charts_path):
+            msg = "Expected directory of charts, not file."
+            raise IOError(msg)
+
+        for _, _, files in os.walk(charts_path):
             charts = [f for f in files if f.endswith(CHART_PACKAGE_TYPE)]
             # Use this format to easily filter out files vs dirs
             break
@@ -128,15 +143,9 @@ def get_local_values(a_dir, chart_name):
 def manifestgen(**args):
     """ Generate the manifest """
     # pylint: disable=too-many-branches
-    mani_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                             'files', 'master_manifest.yaml')
-    manifest = Manifest(mani_path)
 
-    if (args.get('charts_repo') is not None) and (args.get('charts_path') is not None):
-        raise Exception(
-            'Both charts-repo and charts-path arguments were provided, please use one or the other')
-    if (args.get('charts_repo') is None) and (args.get('charts_path') is None):
-        raise Exception('Either the charts-repo or charts-path argument must be provided')
+    mani_path = args.get('in')
+    manifest = Manifest(mani_path)
 
     if args.get('name') is not None:
         manifest.data['name'] = args['name']
@@ -146,20 +155,22 @@ def manifestgen(**args):
         manifest.data['failOnFirstError'] = args['fastfail']
     if args.get('images_registry') is not None:
         manifest.data['repositories']['docker'] = args['images_registry']
-    if args.get('charts_repo') is not None:
-        manifest.data['repositories']['helm'] = args['charts_repo']
+    if not os.path.exists(args['charts_path']):
+        manifest.data['repositories']['helm'] = args['charts_path']
 
     values_dir = args.get('values_path')
 
     master_manifest_charts = manifest.get_charts()
-    available_charts = get_available_charts(args)
+    available_charts = get_available_charts(args.get('charts_path'))
 
     filtered_charts = []
     for master_manifest_chart in master_manifest_charts:
         available_chart_version = available_charts.get(master_manifest_chart['name'])
         if available_chart_version:
-            if 'version' not in master_manifest_chart.keys():
+            # Set version if it DNE or update it if not version lock
+            if 'version' not in master_manifest_chart.keys() or not args.get('version_lock', False):
                 master_manifest_chart['version'] = available_chart_version
+
             if values_dir and manifest.schema != 'v1':
                 values = get_local_values(values_dir, master_manifest_chart['name'])
                 if values is not None:
@@ -190,13 +201,21 @@ def manifestgen(**args):
 
 def main(): # pragma: NO COVER
     """ Main entrypoint """
-    args = get_args()
+    args = vars(get_args())
 
-    if args.validate is not None:
-        manifest = Manifest(args.validate)
+    if args.get('validate') is not None:
+        manifest = Manifest(args['validate'])
         manifest.validate()
     else:
-        manifestgen(**vars(args))
+        args['charts_path'] = args.get('charts_path', args.get('charts_repo'))
+
+        if 'charts_repo' in args:
+            del args['charts_repo']
+
+        if (args.get('charts_path') is None):
+            raise Exception('The charts-path argument must be provided')
+
+        manifestgen(**args)
     sys.exit(0)
 
 

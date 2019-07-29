@@ -208,3 +208,13 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
+
+  # Analytics and AI
+  - name: "capsules-warehouse-server"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "capsules-dispatch-server"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
