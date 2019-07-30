@@ -203,6 +203,12 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
 
+  # CMS
+  - name: "cray-ars3"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
   # SHASTA-OS
   - name: "ncn-customization"
     namespace: "services"
