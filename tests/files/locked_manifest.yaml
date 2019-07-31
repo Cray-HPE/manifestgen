@@ -1,0 +1,14 @@
+---
+schema: v2
+name: cray-loftsman-manifest
+version: 1.0.0
+failOnFirstError: True
+repositories:
+  docker: registry.local
+  helm: charts.local
+charts: # Will install/upgrade charts in the order below, latest versions of charts are auto-detected at manifestgen time if explicit version is not provided here
+  - name: "cray-istio"
+    namespace: "services"
+    version: "0.0.1"
+  - name: "cray-etcd-operator"
+    namespace: "services"

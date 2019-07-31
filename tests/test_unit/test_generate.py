@@ -12,6 +12,7 @@ def test_generate_charts_path_basic():
     # pylint: disable=protected-access
 
     args = {
+        'in': generate.DEFAULT_MANIFEST,
         'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files')
     }
     generate.manifestgen(**args)
@@ -49,6 +50,7 @@ def test_generate_charts_path():
         args = {
             'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
             'out': fp.name,
+            'in': generate.DEFAULT_MANIFEST,
             'images_registry': images_registry,
             'name': manifest_name
         }
@@ -73,9 +75,10 @@ def test_generate_charts_repo():
 
     with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
         args = {
+            'in': generate.DEFAULT_MANIFEST,
             'out': fp.name,
             'images_registry': images_registry,
-            'charts_repo': charts_repo,
+            'charts_path': charts_repo,
             'name': manifest_name,
             'ignore_extra': True
         }
@@ -87,3 +90,60 @@ def test_generate_charts_repo():
     assert data['repositories']['docker'] == images_registry
     assert data['repositories']['helm'] == charts_repo
     assert data['charts']
+
+
+def test_generate_locked():
+    """ Test `manifestgen` for charts-repo """
+    # pylint: disable=protected-access
+
+    manifest_name = 'testing'
+    images_registry = 'dtr.dev.cray.com'
+
+    with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
+        args = {
+            'in': os.path.join(os.path.dirname(__file__), '..', 'files/locked_manifest.yaml'),
+            'out': fp.name,
+            'images_registry': images_registry,
+            'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
+            'name': manifest_name,
+            'ignore_extra': True,
+            'version_lock': True,
+        }
+        generate.manifestgen(**args)
+        fp.seek(0)
+        locked_data = yaml.safe_load(fp)
+
+    assert locked_data['name'] == manifest_name
+    assert locked_data['repositories']['docker'] == images_registry
+    assert locked_data['charts']
+
+    with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
+        args = {
+            'in': os.path.join(os.path.dirname(__file__), '..', 'files/locked_manifest.yaml'),
+            'out': fp.name,
+            'images_registry': images_registry,
+            'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
+            'name': manifest_name,
+            'ignore_extra': True,
+            'version_lock': False,
+        }
+        generate.manifestgen(**args)
+        fp.seek(0)
+        data = yaml.safe_load(fp)
+
+    assert data['name'] == manifest_name
+    assert data['repositories']['docker'] == images_registry
+    assert data['charts']
+
+    for chart in data['charts']:
+        if chart['name'] == 'cray-istio':
+            istio_chart = chart
+            break
+
+    for chart in locked_data['charts']:
+        if chart['name'] == 'cray-istio':
+            locked_istio_chart = chart
+            break
+
+    assert istio_chart['version'] == '1.0.2'
+    assert locked_istio_chart['version'] == '0.0.1'
