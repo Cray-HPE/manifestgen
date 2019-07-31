@@ -60,6 +60,15 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "ceph-monitoring"
     overrides:
       - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
+  - name: "cray-shs"
+    namespace: "shs"
+    overrides:
+    - alertmanager.alertmanagerSpec.image.repository="{repos[docker]}/prometheus/alertmanager"
+    - grafana.downloadDashboardsImage.repository="{repos[docker]}/appropriate/curl"
+    - grafana.image.repository="{repos[docker]}/grafana/grafana"
+    - grafana.initChownData.image.repository="{repos[docker]}/cache/busybox"
+    - grafana.sidecar.image="{repos[docker]}/kiwigrid/k8s-sidecar:0.0.16"
+    - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
   - name: "cray-etcd-operator"
     namespace: "operators"
     waitFor:
