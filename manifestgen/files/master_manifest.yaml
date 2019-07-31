@@ -224,3 +224,10 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
+
+  # Cray Node Memory Dump Service
+  - name: "nmd-service"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
