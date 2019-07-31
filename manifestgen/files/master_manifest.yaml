@@ -60,6 +60,15 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "ceph-monitoring"
     overrides:
       - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
+  - name: "cray-shs"
+    namespace: "shs"
+    overrides:
+    - alertmanager.alertmanagerSpec.image.repository="{repos[docker]}/prometheus/alertmanager"
+    - grafana.downloadDashboardsImage.repository="{repos[docker]}/appropriate/curl"
+    - grafana.image.repository="{repos[docker]}/grafana/grafana"
+    - grafana.initChownData.image.repository="{repos[docker]}/cache/busybox"
+    - grafana.sidecar.image="{repos[docker]}/kiwigrid/k8s-sidecar:0.0.16"
+    - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
   - name: "cray-etcd-operator"
     namespace: "operators"
     waitFor:
@@ -127,6 +136,12 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-replicant"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # CRUS
+  - name: "cray-crus"
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
@@ -224,3 +239,17 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
+
+  # CRAY-CPS
+  - name: "cray-cps"
+    namespace: "services"
+    overrides:
+    - broker.imagesHost="{repos[docker]}"
+    - cm-pm.imagesHost="{repos[docker]}"
+
+  # Cray Node Memory Dump Service
+  - name: "nmd-service"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
