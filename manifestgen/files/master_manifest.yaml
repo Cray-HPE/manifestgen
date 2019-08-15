@@ -17,7 +17,7 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       script:
         command: >-
           kubectl get crds | grep 'istio.io\|certmanager.k8s.io' | wc -l
-        return: "53"
+        return: "23"
     overrides:
     - global.hub="{repos[docker]}/istio"
   - name: "cray-istio"
