@@ -78,9 +78,9 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       - cray-etcd-operator-etcd-operator-etcd-restore-operator
     overrides:
     - etcd-operator.etcdCluster.image.repository="{repos[docker]}/coreos/etcd"
-    - etcd-operator.etcdOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
-    - etcd-operator.restoreOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
-    - etcd-operator.backupOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
+    - etcd-operator.etcdOperator.image.repository="{repos[docker]}/cray/etcd-operator"
+    - etcd-operator.restoreOperator.image.repository="{repos[docker]}/cray/etcd-operator"
+    - etcd-operator.backupOperator.image.repository="{repos[docker]}/cray/etcd-operator"
   - name: "cray-vault-operator"
     namespace: "operators"
     waitFor:
