@@ -219,7 +219,7 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - cray-service.imagesHost="{repos[docker]}"
 
   # CMS
-  - name: "cray-ars3"
+  - name: "cray-ars"
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
