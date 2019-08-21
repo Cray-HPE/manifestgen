@@ -4,7 +4,7 @@ Name: manifestgen
 License: Cray Software License Agreement
 Summary: Cray Command Line Tool
 Version: %(cat ./build_version)
-Release: 1
+Release: %(echo ${BUILD_METADATA})
 Vendor: Cray Inc.
 Group: Cloud
 Source: %{name}-%{version}.tar.gz
