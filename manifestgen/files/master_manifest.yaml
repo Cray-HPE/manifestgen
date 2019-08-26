@@ -26,7 +26,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       pods:
       - istio-pilot
       - istio-citadel
-      - istio-galley
       - istio-ingressgateway
       - istio-policy
       - istio-sidecar-injector
