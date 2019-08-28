@@ -154,10 +154,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
       - imagesHost="{repos[docker]}"
-  - name: "cray-hms-mariadb"
-    namespace: "services"
-    overrides:
-      - imagesHost="{repos[docker]}"
   - name: "cray-hms-badger-db-util"
     namespace: "services"
     overrides:
