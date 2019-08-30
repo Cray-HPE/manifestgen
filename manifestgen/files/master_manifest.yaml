@@ -248,3 +248,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
 
+  # Shared Kafka cluster
+  - name: "cray-shared-kafka"
+    namespace: "services"
