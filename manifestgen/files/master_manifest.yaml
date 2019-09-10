@@ -35,6 +35,13 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - istio.grafana.image.repository="{repos[docker]}/grafana/grafana"
     - istio.tracing.jaeger.hub="{repos[docker]}/jaegertracing"
     - istio.kiali.hub="{repos[docker]}/kiali"
+  - name: "cray-opa"
+    namespace: "opa"
+    waitFor:
+      helm: true
+    overrides:
+    - opa.image="{repos[docker]}/openpolicyagent/opa"
+    - opa.mgmt.image="{repos[docker]}/openpolicyagent/kube-mgmt"
   - name: "cray-prometheus-operator"
     namespace: "kube-monitoring"
     waitFor:
