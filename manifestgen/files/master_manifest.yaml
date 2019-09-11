@@ -214,6 +214,10 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
       - imagesHost="{repos[docker]}"
+  - name: "cray-hms-rts"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
 
   - name: "cray-tokens"
     namespace: "services"
