@@ -17,7 +17,7 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       script:
         command: >-
           kubectl get crds | grep 'istio.io\|certmanager.k8s.io' | wc -l
-        return: "53"
+        return: "23"
     overrides:
     - global.hub="{repos[docker]}/istio"
   - name: "cray-istio"
@@ -26,7 +26,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       pods:
       - istio-pilot
       - istio-citadel
-      - istio-galley
       - istio-ingressgateway
       - istio-policy
       - istio-sidecar-injector
@@ -36,6 +35,13 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - istio.grafana.image.repository="{repos[docker]}/grafana/grafana"
     - istio.tracing.jaeger.hub="{repos[docker]}/jaegertracing"
     - istio.kiali.hub="{repos[docker]}/kiali"
+  - name: "cray-opa"
+    namespace: "opa"
+    waitFor:
+      helm: true
+    overrides:
+    - opa.image="{repos[docker]}/openpolicyagent/opa"
+    - opa.mgmt.image="{repos[docker]}/openpolicyagent/kube-mgmt"
   - name: "cray-prometheus-operator"
     namespace: "kube-monitoring"
     waitFor:
@@ -78,9 +84,9 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
       - cray-etcd-operator-etcd-operator-etcd-restore-operator
     overrides:
     - etcd-operator.etcdCluster.image.repository="{repos[docker]}/coreos/etcd"
-    - etcd-operator.etcdOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
-    - etcd-operator.restoreOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
-    - etcd-operator.backupOperator.image.repository="{repos[docker]}/coreos/etcd-operator"
+    - etcd-operator.etcdOperator.image.repository="{repos[docker]}/cray/etcd-operator"
+    - etcd-operator.restoreOperator.image.repository="{repos[docker]}/cray/etcd-operator"
+    - etcd-operator.backupOperator.image.repository="{repos[docker]}/cray/etcd-operator"
   - name: "cray-vault-operator"
     namespace: "operators"
     waitFor:
@@ -127,10 +133,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - imagesHost="{repos[docker]}"
-  - name: "slingshot-kafka"
-    namespace: "services"
-    overrides:
-    - cray-service.imagesHost="{repos[docker]}"
   - name: "cray-rm-pals"
     namespace: "services"
     overrides:
@@ -152,10 +154,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
       - imagesHost="{repos[docker]}"
   - name: "cray-hms-postgresql"
-    namespace: "services"
-    overrides:
-      - imagesHost="{repos[docker]}"
-  - name: "cray-hms-mariadb"
     namespace: "services"
     overrides:
       - imagesHost="{repos[docker]}"
@@ -212,6 +210,14 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
       - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hmcollector"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-rts"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
 
   - name: "cray-tokens"
     namespace: "services"
@@ -219,7 +225,11 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     - cray-service.imagesHost="{repos[docker]}"
 
   # CMS
-  - name: "cray-ars3"
+  - name: "cray-ars"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "config-framework-service"
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
@@ -243,6 +253,10 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
+  - name: "capsules-ui"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
 
   # CRAY-CPS
   - name: "cray-cps"
@@ -257,3 +271,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
 
+  # Shared Kafka cluster
+  - name: "cray-shared-kafka"
+    namespace: "services"
