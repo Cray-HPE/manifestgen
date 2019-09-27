@@ -282,7 +282,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
   # SMA/SMF
   - name: "sma-grafana"
     namespace: "services"
-    version: 1.1.0
     waitFor:
       helm: true
     overrides:
@@ -290,7 +289,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
 
   - name: "sma-grafana-init"
     namespace: "services"
-    version: 1.1.0
     waitFor:
       pods:
       - grafana
@@ -299,7 +297,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
 
   - name: "sma-kibana"
     namespace: "services"
-    version: 1.1.0
     waitFor:
       helm: true
     overrides:
@@ -307,7 +304,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
 
   - name: "sma-telemetry-api"
     namespace: "services"
-    version: 1.1.0
     waitFor:
       pods:
       - sma-telemetry
