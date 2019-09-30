@@ -282,8 +282,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
   # SMA/SMF
   - name: "sma-grafana"
     namespace: "services"
-    waitFor:
-      helm: true
     overrides:
       - cray-service.imagesHost="{repos[docker]}"
 
@@ -297,16 +295,11 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
 
   - name: "sma-kibana"
     namespace: "services"
-    waitFor:
-      helm: true
     overrides:
       - cray-service.imagesHost="{repos[docker]}"
 
   - name: "sma-telemetry-api"
     namespace: "services"
-    waitFor:
-      pods:
-      - sma-telemetry
     overrides:
       - cray-service.imagesHost="{repos[docker]}"
 
