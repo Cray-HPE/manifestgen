@@ -277,3 +277,28 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
   # Shared Kafka cluster
   - name: "cray-shared-kafka"
     namespace: "services"
+
+  # SMA/SMF
+  - name: "sma-grafana"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+
+  - name: "sma-grafana-init"
+    namespace: "services"
+    waitFor:
+      pods:
+      - grafana
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+
+  - name: "sma-kibana"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+
+  - name: "sma-telemetry-api"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+
