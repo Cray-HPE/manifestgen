@@ -1,5 +1,5 @@
 """ Test the validator """
-# pylint: disable=import-error, invalid-name
+# pylint: disable=import-error, invalid-name, superfluous-parens, protected-access
 import os
 import tempfile
 
@@ -147,3 +147,19 @@ def test_generate_locked():
 
     assert istio_chart['version'] == '1.0.2'
     assert locked_istio_chart['version'] == '0.0.1'
+
+
+def test_parse_chart_name():
+    """ Test chart name parser """
+    tests = [
+        {'chart_name': 'foo-1.2.3.tgz', 'name': 'foo', 'version': '1.2.3'},
+        {'chart_name': 'foo-1.2.3-rc1.tgz', 'name': 'foo', 'version': '1.2.3-rc1'},
+        {'chart_name': 'foo-bar-1.2.3.tgz', 'name': 'foo-bar', 'version': '1.2.3'},
+        {'chart_name': 'foo-1.2.3-123.tgz', 'name': 'foo', 'version': '1.2.3-123'},
+        {'chart_name': 'foo-1.2.3-123.1.tgz', 'name': 'foo', 'version': '1.2.3-123.1'},
+    ]
+    for test in tests:
+        print('Testing chart name parsing for: {}'.format(test['chart_name']))
+        name, version = generate._parse_chart_name(test['chart_name'])
+        assert name == test['name']
+        assert version == test['version']

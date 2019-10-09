@@ -88,6 +88,24 @@ class Manifest(object):  # pylint: disable=old-style-class
         return self.yaml
 
 
+def _parse_chart_name(chart_name):
+    # Note this NEEDs a file extension, otherwise you'll have problems
+    # because it will just split out the last period which will chop the version
+    parts = os.path.splitext(chart_name)[0].split('-')
+    for i, part in enumerate(parts, start=0):
+        ver = None
+        try:
+            ver = semver.parse(part)
+        except ValueError:
+            pass
+        if ver:
+            version = '-'.join(parts[i:])
+            name = '-'.join(parts[:i])
+            return (name, version)
+
+    raise ValueError("No version found in {}".format(chart_name))
+
+
 def get_available_charts(charts_path):
     """ Get all available latest-version charts either from the local blob or charts repo """
     available_charts = {}
@@ -120,9 +138,7 @@ def get_available_charts(charts_path):
             break
 
         for chart in charts:
-            parts = chart.split('-')
-            version = parts[-1].replace(CHART_PACKAGE_TYPE, '')
-            name = '-'.join(parts[:-1])
+            name, version = _parse_chart_name(chart)
             if name not in available_charts.keys():
                 available_charts[name] = '0.0.0'
             available_charts[name] = semver.max_ver(available_charts[name], version)
