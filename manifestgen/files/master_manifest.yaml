@@ -306,3 +306,9 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     overrides:
       - cray-service.imagesHost="{repos[docker]}"
 
+  # Cray STS shim service
+  - name: "cray-sts"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+
