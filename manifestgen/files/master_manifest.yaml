@@ -144,6 +144,10 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
     namespace: "services"
     overrides:
     - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-node-discovery"
+    namespace: "services"
+    overrides:
+    - imagesHost="{repos[docker]}"
 
   # CRUS
   - name: "cray-crus"
