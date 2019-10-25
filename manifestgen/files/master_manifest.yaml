@@ -290,22 +290,6 @@ charts: # Will install/upgrade charts in the order below, latest versions of cha
   - name: "cray-shared-kafka"
     namespace: "services"
 
-  # SMA/SMF
-  - name: "sma-grafana"
-    namespace: "services"
-    overrides:
-      - cray-service.imagesHost="{repos[docker]}"
-
-  - name: "sma-kibana"
-    namespace: "services"
-    overrides:
-      - cray-service.imagesHost="{repos[docker]}"
-
-  - name: "sma-telemetry-api"
-    namespace: "services"
-    overrides:
-      - cray-service.imagesHost="{repos[docker]}"
-
   # Cray STS shim service
   - name: "cray-sts"
     namespace: "services"
