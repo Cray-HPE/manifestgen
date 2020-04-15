@@ -1,0 +1,18 @@
+---
+apiVersion: manifests/v1
+metadata:
+  name: cray-loftsman-manifest
+spec:
+  releases:
+    - apiVersion: helm.fluxcd.io/v1
+      kind: HelmRelease
+      metadata:
+        name: istio
+        namespace: default
+      spec:
+        chart:
+          repository: https://stefanprodan.github.io/podinfo
+          name: istio
+          version: 3.2.0
+          values: {}
+

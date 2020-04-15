@@ -1,4 +1,6 @@
 ruamel.yaml==0.15.89
-yamale==1.9.0
+yamale == 2.0.1
 semver==2.8.1
 requests==2.21.0
+jinja2==2.11.2
+pyyaml==5.3.1

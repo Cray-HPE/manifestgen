@@ -1,5 +1,5 @@
 # pylint: skip-file
 
-from . import generate, validator
+from . import nesteddict, generate, validator, schema
 
-__all__ = ['generate', 'validator']
+__all__ = ['generate', 'validator', 'nesteddict', 'schema']

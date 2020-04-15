@@ -1,0 +1,17 @@
+---
+apiVersion: manifests/v1
+metadata:
+  name: cray-loftsman-manifest
+spec:
+  releases:
+    - apiVersion: helm.fluxcd.io/v1
+      kind: HelmRelease
+      metadata:
+        name: cray-istio
+        namespace: istio-system
+      spec:
+        chart:
+          name: cray-istio
+          version: 3.2.0
+          values: {}
+

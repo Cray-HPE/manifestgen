@@ -1,0 +1,293 @@
+---
+schema: v2
+name: cray-loftsman-manifest
+version: 1.0.0
+failOnFirstError: True
+repositories:
+  docker: registry.local
+  helm: charts.local
+charts: # Will install/upgrade charts in the order below, latest versions of charts are auto-detected at manifestgen time if explicit version is not provided here
+  - name: "cray-drydock"
+    namespace: "loftsman"
+    overrides:
+    - imagesHost="{repos[docker]}"
+  - name: "cray-istio-init"
+    namespace: "istio-system"
+    waitFor:
+      script:
+        command: >-
+          kubectl get crds | grep 'istio.io\|certmanager.k8s.io' | wc -l
+        return: "23"
+    overrides:
+    - global.hub="{repos[docker]}/istio"
+  - name: "cray-istio"
+    namespace: "istio-system"
+    waitFor:
+      pods:
+      - istio-pilot
+      - istio-citadel
+      - istio-ingressgateway
+      - istio-policy
+      - istio-sidecar-injector
+    overrides:
+    - global.hub="{repos[docker]}/istio"
+    - istio.prometheus.hub="{repos[docker]}/prom"
+    - istio.grafana.image.repository="{repos[docker]}/grafana/grafana"
+    - istio.tracing.jaeger.hub="{repos[docker]}/jaegertracing"
+    - istio.kiali.hub="{repos[docker]}/kiali"
+  - name: "cray-opa"
+    namespace: "opa"
+    waitFor:
+      helm: true
+    overrides:
+    - imagesHost="{repos[docker]}"
+  - name: "cray-prometheus-operator"
+    namespace: "kube-monitoring"
+    waitFor:
+      script:
+        command: >-
+          kubectl get crds | grep '.monitoring.coreos.com' | wc -l
+        return: "5"
+    overrides:
+      - prometheus-operator.alertmanager.alertmanagerSpec.image.repository="{repos[docker]}/prometheus/alertmanager"
+      - prometheus-operator.prometheusOperator.image.repository="{repos[docker]}/coreos/prometheus-operator"
+      - prometheus-operator.prometheusOperator.configmapReloadImage.repository="{repos[docker]}/coreos/configmap-reload"
+      - prometheus-operator.prometheusOperator.prometheusConfigReloaderImage.repository="{repos[docker]}/coreos/prometheus-config-reloader"
+      - prometheus-operator.prometheusOperator.hyperkubeImage.repository="{repos[docker]}/k8s.gcr.io/hyperkube"
+      - prometheus-operator.prometheus.prometheusSpec.image.repository="{repos[docker]}/prometheus/prometheus"
+      - prometheus-operator.kube-state-metrics.image.repository="{repos[docker]}/coreos/kube-state-metrics"
+      - prometheus-operator.grafana.image.repository="{repos[docker]}/grafana/grafana"
+      - prometheus-operator.grafana.initChownData.image.repository="{repos[docker]}/cache/busybox"
+      - prometheus-operator.grafana.sidecar.image="{repos[docker]}/kiwigrid/k8s-sidecar:0.0.16"
+      - prometheus-operator.grafana.downloadDashboardsImage.repository="{repos[docker]}/appropriate/curl"
+      - prometheus-operator.prometheus-node-exporter.image.repository="{repos[docker]}/prometheus/node-exporter"
+  - name: "cray-ceph-monitoring"
+    namespace: "ceph-monitoring"
+    overrides:
+      - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
+  - name: "cray-shs"
+    namespace: "shs"
+    overrides:
+    - alertmanager.alertmanagerSpec.image.repository="{repos[docker]}/prometheus/alertmanager"
+    - grafana.downloadDashboardsImage.repository="{repos[docker]}/appropriate/curl"
+    - grafana.image.repository="{repos[docker]}/grafana/grafana"
+    - grafana.initChownData.image.repository="{repos[docker]}/cache/busybox"
+    - grafana.sidecar.image="{repos[docker]}/kiwigrid/k8s-sidecar:0.0.16"
+    - prometheus.image.repository="{repos[docker]}/prometheus/prometheus"
+  - name: "cray-etcd-operator"
+    namespace: "operators"
+    waitFor:
+      pods:
+      - cray-etcd-operator-etcd-operator-etcd-backup-operator
+      - cray-etcd-operator-etcd-operator-etcd-operator
+      - cray-etcd-operator-etcd-operator-etcd-restore-operator
+    overrides:
+    - etcd-operator.etcdCluster.image.repository="{repos[docker]}/coreos/etcd"
+    - etcd-operator.etcdOperator.image.repository="{repos[docker]}/cray/etcd-operator"
+    - etcd-operator.restoreOperator.image.repository="{repos[docker]}/cray/etcd-operator"
+    - etcd-operator.backupOperator.image.repository="{repos[docker]}/cray/etcd-operator"
+  - name: "cray-vault-operator"
+    namespace: "operators"
+    waitFor:
+      pods:
+      - cray-vault-operator
+    overrides:
+    - vault-operator.image.repository="{repos[docker]}/banzaicloud/vault-operator"
+  - name: "cray-postgres-operator"
+    namespace: "services"
+    waitFor:
+      script:
+        command: >-
+          kubectl get crds | grep 'postgresqls.acid.zalan.do' | wc -l
+        return: "1"
+    overrides:
+    - postgres-operator.image.registry="{repos[docker]}"
+    - postgres-operator.config.docker_image="{repos[docker]}/acid/spilo-cdp-11:1.5-p70"
+  - name: "cray-kafka-operator"
+    namespace: "services"
+    waitFor:
+      helm: true
+    overrides:
+    - strimzi-kafka-operator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.zookeeper.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafka.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafkaConnect.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafkaConnects2i.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.topicOperator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.userOperator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.kafkaInit.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarZookeeper.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarKafka.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarEntityOperator.image.repository="{repos[docker]}/strimzi"
+    - strimzi-kafka-operator.tlsSidecarKakafkaMirrorMakerfka.image.repository="{repos[docker]}/strimzi"
+  - name: "cray-vault"
+    namespace: "vault"
+    overrides:
+    - imagesHost="{repos[docker]}"
+  - name: "slingshot-controllers"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "slingshot-clis"
+    namespace: "services"
+    overrides:
+    - imagesHost="{repos[docker]}"
+  - name: "cray-rm-pals"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-replicant"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "keycloak"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-node-discovery"
+    namespace: "services"
+    overrides:
+    - imagesHost="{repos[docker]}"
+
+  # CRUS
+  - name: "cray-crus"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # HMS
+  - name: "cray-hms-postgresql"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-db-util"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-api"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-job-api"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-service"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-badger-loader"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-bss"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-capmc"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-fw-update"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-meds"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-reds"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-smd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hbtd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hmnfd"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-hmcollector"
+    namespace: "services"
+    overrides:
+      - imagesHost="{repos[docker]}"
+  - name: "cray-hms-rts"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+  - name: "cray-hms-sls"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"
+
+  - name: "cray-tokens"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # CMS
+  - name: "cray-ars"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "config-framework-service"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "gitea"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "cms-conman"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # SHASTA-OS
+  - name: "ncn-customization"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # Analytics and AI
+  - name: "capsules-warehouse-server"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "capsules-dispatch-server"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+  - name: "capsules-ui"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # CRAY-CPS
+  - name: "cray-cps"
+    namespace: "services"
+    overrides:
+    - broker.imagesHost="{repos[docker]}"
+    - cm-pm.imagesHost="{repos[docker]}"
+
+  # Cray Node Memory Dump Service
+  - name: "nmd-service"
+    namespace: "services"
+    overrides:
+    - cray-service.imagesHost="{repos[docker]}"
+
+  # Shared Kafka cluster
+  - name: "cray-shared-kafka"
+    namespace: "services"
+
+  # Cray STS shim service
+  - name: "cray-sts"
+    namespace: "services"
+    overrides:
+      - cray-service.imagesHost="{repos[docker]}"

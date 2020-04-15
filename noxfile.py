@@ -8,7 +8,7 @@ import nox  # pylint: disable=import-error
 COVERAGE_FAIL = 80
 
 
-@nox.session(python=['2.7'])
+@nox.session(python=['3'])
 def tests(session):
     """Default unit test session.
     This is meant to be run against any python version intended to be used.
@@ -37,7 +37,7 @@ def tests(session):
     )
 
 
-@nox.session(python=['2.7'])
+@nox.session(python=['3'])
 def lint(session):
     """Run linters.
     Returns a failure if the linters find linting errors or sufficiently
@@ -50,7 +50,7 @@ def lint(session):
     session.run(*run_cmd)
 
 
-@nox.session(python="2.7")
+@nox.session(python="3")
 def cover(session):
     """Run the final coverage report.
     This outputs the coverage report aggregating coverage from the unit
