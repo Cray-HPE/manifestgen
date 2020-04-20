@@ -7,13 +7,19 @@ from ruamel import yaml
 
 from manifestgen import generate
 
+FILES_DIR = os.path.join(os.path.dirname(__file__), '..', 'files')
+CHARTS_PATH = FILES_DIR
+SCHEMA_V2 = os.path.join(FILES_DIR, 'schema_v2.yaml')
+LOCKED_SCHEMA_V2 = os.path.join(FILES_DIR, 'locked_manifest.yaml')
+
+
 def test_generate_charts_path_basic():
     """ Test `manifestgen` with only charts-path """
     # pylint: disable=protected-access
 
     args = {
-        'in': generate.DEFAULT_MANIFEST,
-        'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files')
+        'in': SCHEMA_V2,
+        'charts_path': CHARTS_PATH
     }
     generate.manifestgen(**args)
     assert True is True # Just to make sure we got here
@@ -48,9 +54,9 @@ def test_generate_charts_path():
 
     with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
         args = {
-            'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
+            'charts_path': CHARTS_PATH,
             'out': fp.name,
-            'in': generate.DEFAULT_MANIFEST,
+            'in': SCHEMA_V2,
             'images_registry': images_registry,
             'name': manifest_name
         }
@@ -75,7 +81,7 @@ def test_generate_charts_repo():
 
     with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
         args = {
-            'in': generate.DEFAULT_MANIFEST,
+            'in': SCHEMA_V2,
             'out': fp.name,
             'images_registry': images_registry,
             'charts_path': charts_repo,
@@ -101,10 +107,10 @@ def test_generate_locked():
 
     with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
         args = {
-            'in': os.path.join(os.path.dirname(__file__), '..', 'files/locked_manifest.yaml'),
+            'in': LOCKED_SCHEMA_V2,
             'out': fp.name,
             'images_registry': images_registry,
-            'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
+            'charts_path': CHARTS_PATH,
             'name': manifest_name,
             'ignore_extra': True,
             'version_lock': True,
@@ -119,10 +125,10 @@ def test_generate_locked():
 
     with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
         args = {
-            'in': os.path.join(os.path.dirname(__file__), '..', 'files/locked_manifest.yaml'),
+            'in': LOCKED_SCHEMA_V2,
             'out': fp.name,
             'images_registry': images_registry,
-            'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
+            'charts_path': CHARTS_PATH,
             'name': manifest_name,
             'ignore_extra': True,
             'version_lock': False,

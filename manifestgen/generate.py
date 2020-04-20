@@ -14,8 +14,6 @@ import requests
 from manifestgen import validator
 
 CHART_PACKAGE_TYPE = '.tgz'
-DEFAULT_MANIFEST = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                                'files', 'master_manifest.yaml')
 
 def get_args(): # pragma: NO COVER
     """Get args"""
@@ -31,7 +29,7 @@ def get_args(): # pragma: NO COVER
     parser.add_argument('--charts-repo', metavar='URL', help='Deprecated. This will be removed in future releases.')
     # TODO: Set default to baked in manifest for now. When all tools migrate to external manifest, remove the default
     # and no longer bake manifest in.
-    parser.add_argument('-i', '--in', metavar='FILE', help='Input file', default=DEFAULT_MANIFEST)
+    parser.add_argument('-i', '--in', metavar='FILE', help='Input file', required=True)
     parser.add_argument('-o', '--out', metavar='FILE', help='Output file')
     parser.add_argument('--ignore-extra', default=True, action='store_true',
                         help='Deprecated. This will be removed in future releases.')

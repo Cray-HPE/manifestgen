@@ -26,7 +26,7 @@ else
     exit 1
 fi
 
-cli_run=$($CLI --charts-path tests/files/)
+cli_run=$($CLI --charts-path tests/files/ --in tests/files/schema_v2.yaml)
 if [[ $? == 0 ]]; then
     echo "PASS: manifestgen --charts-path tests/files/ returns successfully"
 else
