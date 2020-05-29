@@ -50,7 +50,6 @@ def test_generate_charts_repo():
     # pylint: disable=protected-access
 
     charts_repo = 'http://helmrepo.dev.cray.com:8080'
-
     manifest = schema.new_schema(SCHEMAV2)
     args = {
         'manifest': manifest,

@@ -14,8 +14,6 @@ import requests
 from manifestgen import schema
 
 CHART_PACKAGE_TYPE = '.tgz'
-DEFAULT_MANIFEST = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                                'files', 'master_manifest.yaml')
 
 def get_args(): # pragma: NO COVER
     """Get args"""

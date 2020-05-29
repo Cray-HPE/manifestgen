@@ -22,10 +22,8 @@ pyinstaller --clean -y --hidden-import='pkg_resources.py2_warn' --hidden-import 
 install -m 755 -d %{buildroot}%{_bindir}
 install -m 755 -d %{buildroot}%{install_dir}
 install -m 755 dist/manifestgen %{buildroot}%{_bindir}/manifestgen
-install -D -m 644 manifestgen/files/master_manifest.yaml %{buildroot}%{install_dir}/base_manifest.yaml
 
 %files
 %{_bindir}/manifestgen
-%{install_dir}/base_manifest.yaml
 
 %changelog

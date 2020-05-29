@@ -15,3 +15,8 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - [BREAKING] Previously deprecated flags have been removed
+
+## [0.24.0] - 2020-04-20
+### Removed
+- Deprecated master manifest has been removed
+- The `-in` arg is now required
