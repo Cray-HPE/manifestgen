@@ -21,7 +21,7 @@ def get_args(): # pragma: NO COVER
     parser = argparse.ArgumentParser(description='Generate manifest.')
     parser.add_argument('--values-path', metavar='PATH', help='DEPRECATED: Path to chart_name.yaml files to be passed as values.yaml to charts.')
     parser.add_argument('--charts-path', metavar='BLOB/URL', help='DEPRECATED: Path to chart packages or url to charts repo.')
-    parser.add_argument('-i', '--in', metavar='FILE', help='Input file', default=DEFAULT_MANIFEST)
+    parser.add_argument('-i', '--in', metavar='FILE', help='Input file', required=True)
     parser.add_argument('-c', '--customizations', metavar='FILE', help='Customizations file')
     parser.add_argument('-o', '--out', metavar='FILE', help='Output file')
     parser.add_argument('--validate', default=False, action='store_true', help='Validate an existing manifest file.')
