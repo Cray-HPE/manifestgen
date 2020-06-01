@@ -1,0 +1,33 @@
+---
+apiVersion: customizations/v1
+metadata:
+  name: ronan-customizations
+spec:
+  globals:
+  network:
+    subnets:
+      can: 192.168.1.0
+    static_ips:
+      api_gw: 192.168.1.1
+  repositories:
+    containers:
+      default: http://nexus.cluster.local
+      secondary: https://dtr.dev.cray.com
+    helm:
+      default: http://nexus.cluster.local
+    rpm:
+      main: http://nexus.cluster.local
+  dns:
+    domains:
+      base: "shasta.io"
+  kubernetes:
+    services:
+      istio:
+        repository: "{{ repositories.helm.default }}"
+        values:
+          ip: "{{ network.static_ips.api_gw }}"
+          domain: "{{ dns.domains.base }}"
+      shs:
+        repository: "{{ repositories.helm.default }}"
+        values:
+          domain: "{{ dns.domains.base }}"

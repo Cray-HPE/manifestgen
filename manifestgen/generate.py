@@ -1,6 +1,6 @@
 """ Cray CLI """
 # pylint: disable=unused-argument, superfluous-parens
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name, broad-except
 
 import sys
 import os
@@ -8,10 +8,10 @@ import argparse
 import re
 
 import semver
-from ruamel import yaml
+import yaml
 import requests
 
-from manifestgen import validator
+from manifestgen import schema
 
 CHART_PACKAGE_TYPE = '.tgz'
 
@@ -19,71 +19,14 @@ def get_args(): # pragma: NO COVER
     """Get args"""
     # pylint: disable=line-too-long, fixme
     parser = argparse.ArgumentParser(description='Generate manifest.')
-    parser.add_argument('--values-path', metavar='PATH', help='Path to chart_name.yaml files to be passed as values.yaml to charts.')
-    parser.add_argument('--charts-path', metavar='BLOB/URL', help='Path to chart packages or url to charts repo.')
-    parser.add_argument('--name', dest='name', help='Manifest name.')
-    parser.add_argument('--schema', dest='schema', help='Manifest schema to generate.', default='v2')
-    parser.add_argument('--fastfail', default=False, action='store_true',
-                        help='Tell the manifest to fail on first error.')
-    parser.add_argument('--images-registry', metavar='URL', help='Docker registry where images reside.')
-    parser.add_argument('--charts-repo', metavar='URL', help='Deprecated. This will be removed in future releases.')
-    # TODO: Set default to baked in manifest for now. When all tools migrate to external manifest, remove the default
-    # and no longer bake manifest in.
+    parser.add_argument('--values-path', metavar='PATH', help='DEPRECATED: Path to chart_name.yaml files to be passed as values.yaml to charts.')
+    parser.add_argument('--charts-path', metavar='BLOB/URL', help='DEPRECATED: Path to chart packages or url to charts repo.')
     parser.add_argument('-i', '--in', metavar='FILE', help='Input file', required=True)
+    parser.add_argument('-c', '--customizations', metavar='FILE', help='Customizations file')
     parser.add_argument('-o', '--out', metavar='FILE', help='Output file')
-    parser.add_argument('--ignore-extra', default=True, action='store_true',
-                        help='Deprecated. This will be removed in future releases.')
-    parser.add_argument('--version-lock', default=False, action='store_true',
-                        help='Do not update chart versions that exist in master manifest (default: %(default)s).')
-    parser.add_argument('--validate', metavar='PATH', help='Validate an existing manifest file.')
+    parser.add_argument('--validate', default=False, action='store_true', help='Validate an existing manifest file.')
     return parser.parse_args()
 
-
-class _NullStream:  # pylint: disable=no-init, old-style-class
-    """ NullStream used for yaml dump """
-
-    def write(self, *args, **kwargs):
-        """ Null writer """
-        pass
-
-    def flush(self, *args, **kwargs):
-        """ Null flusher """
-        pass
-
-
-class Manifest(object):  # pylint: disable=old-style-class
-    """ Load yaml file, and do things with it """
-
-    def __init__(self, path):
-        with open(path) as fp:
-            data = yaml.safe_load(fp)
-        self.data = data
-        self.yaml = None
-        self.schema = data['schema']
-
-    def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.schema)
-
-    def _to_string(self, data):
-        self.yaml = data
-
-    def get_charts(self):
-        """ Get current manifest charts """
-        return self.data.get('charts', [])
-
-    def set_charts(self, charts):
-        """ Set the current manifest charts """
-        self.data['charts'] = charts
-
-    def validate(self):
-        """ Validate manifest data """
-        self.parse()
-        validator.validate(self.yaml)
-
-    def parse(self):
-        """ Generate manifest yaml from data """
-        yaml.YAML().dump(self.data, _NullStream(), transform=self._to_string)
-        return self.yaml
 
 
 def _parse_chart_name(chart_name):
@@ -153,85 +96,86 @@ def get_local_values(a_dir, chart_name):
     return None
 
 
-
 def manifestgen(**args):
     """ Generate the manifest """
     # pylint: disable=too-many-branches
 
-    mani_path = args.get('in')
-    manifest = Manifest(mani_path)
-
-    if args.get('name') is not None:
-        manifest.data['name'] = args['name']
-    if args.get('schema') is not None:
-        manifest.data['schema'] = args['schema']
-    if args.get('fastfail') is not None:
-        manifest.data['failOnFirstError'] = args['fastfail']
-    if args.get('images_registry') is not None:
-        manifest.data['repositories']['docker'] = args['images_registry']
-    if not os.path.exists(args['charts_path']):
-        manifest.data['repositories']['helm'] = args['charts_path']
+    manifest = args.get('manifest')
 
     values_dir = args.get('values_path')
+    if values_dir:
+        print("# DEPRECATED! Please migrate to the customizations yaml")
+    customizations = args.get('customizations')
 
-    master_manifest_charts = manifest.get_charts()
-    available_charts = get_available_charts(args.get('charts_path'))
+    manifest_charts = manifest.get_charts()
+    available_charts = {}
+    if args.get('charts_path'):
+        print("# DEPRECATED! This will be removed in future releases!")
+        available_charts = get_available_charts(args['charts_path'])
 
     filtered_charts = []
-    for master_manifest_chart in master_manifest_charts:
-        available_chart_version = available_charts.get(master_manifest_chart['name'])
-        if available_chart_version:
-            # Set version if it DNE or update it if not version lock
-            if 'version' not in master_manifest_chart.keys() or not args.get('version_lock', False):
-                master_manifest_chart['version'] = available_chart_version
+    for manifest_chart in manifest_charts:
+        chart_name = manifest_chart.get(manifest.get_key('name'))
 
-            if values_dir and manifest.schema != 'v1':
-                values = get_local_values(values_dir, master_manifest_chart['name'])
-                if values is not None:
-                    master_manifest_chart['values'] = values
-            filtered_charts.append(master_manifest_chart)
-            del available_charts[master_manifest_chart['name']]
+        chart_ver = manifest_chart.get(manifest.get_key('version'))
+        if not chart_ver:
+            found_latest_version = available_charts.get(chart_name)
+            if not found_latest_version:
+                # Means the chart DNE in the remote area and the user hasn't
+                # defined a version. So we will omit it.
+                continue
+            # User didn't provide a version, so use the latest found version
+            manifest_chart.set_deep(manifest.get_key('version'), found_latest_version)
 
-    if available_charts and not args.get('ignore_extra'):
-        # Some charts exist that aren't in the master manifest
-        extra_charts = ", ".join(available_charts.keys())
-        msg = "Some charts exist in the blob that don't exist in the master manifest: {}"
-        raise Exception(msg.format(extra_charts))
+        if values_dir:
+            values = get_local_values(values_dir, chart_name)
+            if values is not None:
+                manifest_chart.set_deep(manifest.get_key('values'), values)
+
+        # Merge customizations schema into chart data
+        if customizations:
+            custom_data = customizations.get_chart(chart_name)
+            manifest_chart = manifest.customize(manifest_chart, custom_data)
+
+        filtered_charts.append(manifest_chart)
 
     # Set our generated manifest with the appropriate/filtered list of charts/versions
     manifest.set_charts(filtered_charts)
-
     # Make sure it passes schema check
     manifest.validate()
 
-    out_yaml = manifest.parse()
-
-    if args.get('out') is not None:
-        with open(args['out'], 'w') as output:
-            output.write(out_yaml)
-    else:
-        print(out_yaml)
+    return manifest
 
 
 def main(): # pragma: NO COVER
     """ Main entrypoint """
     args = vars(get_args())
 
-    if args.get('validate') is not None:
-        manifest = Manifest(args['validate'])
-        manifest.validate()
-    else:
-        if args.get('charts_path') is None:
-            args['charts_path'] = args.get('charts_repo')
+    try:
+        # Validate customizations immediately to fail early
+        customizations = args.get('customizations')
+        if customizations:
+            args['customizations'] = schema.new_schema(args['customizations'],
+                                                       expected='customizations')
+            args['customizations'].validate()
 
-        if 'charts_repo' in args:
-            del args['charts_repo']
+        args['manifest'] = schema.new_schema(args['in'], expected=['manifests', 'schema'])
 
-        if (args.get('charts_path') is None):
-            raise Exception('The charts-path argument must be provided')
+        if args.get('validate', False):
+            args['manifest'].validate()
+            sys.exit(0)
 
-        manifestgen(**args)
-    sys.exit(0)
+        out_yaml = manifestgen(**args).parse()
+        if args.get('out') is not None:
+            with open(args['out'], 'w') as output:
+                output.write(out_yaml)
+        else:
+            print(out_yaml)
+
+        sys.exit(0)
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
 
 if getattr(sys, 'frozen', False): # pragma: NO COVER

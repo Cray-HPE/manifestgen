@@ -21,39 +21,20 @@ else
     exit 1
 fi
 
-PIP2="pip"
-
-function set_pip2(){
-
-    if command -v pip2.7 > /dev/null; then
-        PIP2="pip2.7"
-    elif command -v pip-2.7 > /dev/null; then
-        PIP2="pip-2.7"
-    elif command -v pip2 > /dev/null; then
-        PIP2="pip2"
-    fi
-}
-
-set_pip2
-
 if ! command -v pip3 > /dev/null; then
     easy_install-3.4 pip || easy_install-3.6 pip || easy_install pip
 fi
 pip3 install --upgrade pip
 pip3 install --upgrade --no-use-pep517 nox
-# We want to build as python2.7 so install with normal pip
-$PIP2 install --upgrade pip
-# On sles12 the pip upgrade changes the symlink from pip-2.7 to pip2.7, cool.
-set_pip2
 
-$PIP2 install --ignore-installed pyinstaller==3.3
+pip3 install --ignore-installed pyinstaller==3.3
 
-pyinstaller_version=$(python2 -m PyInstaller --version)
+pyinstaller_version=$(python3 -m PyInstaller --version)
 if [[ $? != 0 ]]; then
-    echo "FAIL: pyinstaller not installed with python2."
+    echo "FAIL: pyinstaller not installed with python3."
     exit 1
 fi
 
-$PIP2 install --ignore-installed -r requirements.txt
+pip3 install --ignore-installed -r requirements.txt
 
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf

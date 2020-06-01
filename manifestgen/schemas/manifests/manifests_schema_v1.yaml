@@ -1,0 +1,40 @@
+# DRAFT - WIP
+apiVersion: enum('manifests/v1', required=True)
+metadata:
+  name: str(required=True)
+  labels: map(required=False)
+spec:
+  releases: list(include('release'))
+---
+release:
+  apiVersion: str(required=True)
+  kind: enum('HelmRelease', required=True)
+  metadata: include('metadata', required=True)
+  spec: include('spec', required=True)
+---
+metadata:
+  name: str(required=True)
+  namespace: str(required=True)
+  labels: map(required=False)
+  annotations: map(required=False)
+---
+spec:
+  chart: include('chart', required=True)
+---
+chart:
+  name: str()
+
+  version: version()
+  onError: enum('fail', 'ignore', required=False)
+  waitFor: include('waitFor', required=False)
+  overrides: list(required=False)
+  values: map(required=False)
+---
+waitFor:
+  helm: bool(required=False)
+  pods: list(required=False)
+  script: include('script', required=False)
+---
+script:
+  command: str()
+  return: str()

@@ -1,0 +1,26 @@
+# This is just an example, this will change
+apiVersion: enum('customizations/v1')
+metadata: include('metadata')
+spec: include('spec')
+---
+spec:
+  network: include('network', required=True)
+  dns: map(required=False)
+  kubernetes: include('kubernetes')
+  repositories: include('repositories', strict=True, required=True)
+---
+metadata:
+  name: str()
+  labels: map(required=False)
+---
+kubernetes:
+  services: map(required=False)
+  sealed_secrets: map(sealedSecret(), required=False)
+---
+repositories:
+  containers: map(required=True)
+  helm: map(required=True)
+  rpm: map(required=True)
+---
+network:
+  static_ips: map(required=True)

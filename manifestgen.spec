@@ -16,7 +16,7 @@ A CLI tool to generate a loftsman manifest from a blob
 %setup -q
 
 %build
-pyinstaller --clean -y --hidden-import yamale --add-data ../manifestgen/schemas:manifestgen/schemas -p manifestgen --onefile manifestgen/generate.py -n manifestgen --specpath dist
+pyinstaller --clean -y --hidden-import='pkg_resources.py2_warn' --hidden-import yamale --add-data ../manifestgen/schemas:manifestgen/schemas -p manifestgen --onefile manifestgen/generate.py -n manifestgen --specpath dist
 
 %install
 install -m 755 -d %{buildroot}%{_bindir}

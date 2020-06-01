@@ -1,29 +1,14 @@
 """ Test the validator """
 # pylint: disable=import-error, invalid-name, superfluous-parens, protected-access
 import os
-import tempfile
 
-from ruamel import yaml
+from manifestgen import generate, schema, nesteddict
 
-from manifestgen import generate
+TEST_FILES = os.path.join(os.path.dirname(__file__), '..', 'files')
 
-FILES_DIR = os.path.join(os.path.dirname(__file__), '..', 'files')
-CHARTS_PATH = FILES_DIR
-SCHEMA_V2 = os.path.join(FILES_DIR, 'schema_v2.yaml')
-LOCKED_SCHEMA_V2 = os.path.join(FILES_DIR, 'locked_manifest.yaml')
-
-
-def test_generate_charts_path_basic():
-    """ Test `manifestgen` with only charts-path """
-    # pylint: disable=protected-access
-
-    args = {
-        'in': SCHEMA_V2,
-        'charts_path': CHARTS_PATH
-    }
-    generate.manifestgen(**args)
-    assert True is True # Just to make sure we got here
-
+SCHEMAV2 = os.path.join(TEST_FILES, 'schema_v2.yaml')
+MANIFESTSV1 = os.path.join(TEST_FILES, 'manifests_v1.yaml')
+CUSTOMIZATIONSV1 = os.path.join(TEST_FILES, 'customizations_v1.yaml')
 
 def test_custom_values():
     """ Test `manifestgen` with only charts-path """
@@ -49,23 +34,12 @@ def test_generate_charts_path():
     """ Test `manifestgen` for charts-path """
     # pylint: disable=protected-access
 
-    manifest_name = 'testing'
-    images_registry = 'asdf'
-
-    with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
-        args = {
-            'charts_path': CHARTS_PATH,
-            'out': fp.name,
-            'in': SCHEMA_V2,
-            'images_registry': images_registry,
-            'name': manifest_name
-        }
-        generate.manifestgen(**args)
-        fp.seek(0)
-        data = yaml.safe_load(fp)
-
-    assert data['name'] == manifest_name
-    assert data['repositories']['docker'] == images_registry
+    manifest = schema.new_schema(SCHEMAV2)
+    args = {
+        'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
+        'manifest': manifest
+    }
+    data = generate.manifestgen(**args).data()
 
     assert len(data['charts']) == 2
     for c in data['charts']:
@@ -75,85 +49,66 @@ def test_generate_charts_repo():
     """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
-    manifest_name = 'testing'
-    images_registry = 'dtr.dev.cray.com'
     charts_repo = 'http://helmrepo.dev.cray.com:8080'
+    manifest = schema.new_schema(SCHEMAV2)
+    args = {
+        'manifest': manifest,
+        'charts_path': charts_repo,
+    }
 
-    with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
-        args = {
-            'in': SCHEMA_V2,
-            'out': fp.name,
-            'images_registry': images_registry,
-            'charts_path': charts_repo,
-            'name': manifest_name,
-            'ignore_extra': True
-        }
-        generate.manifestgen(**args)
-        fp.seek(0)
-        data = yaml.safe_load(fp)
 
-    assert data['name'] == manifest_name
-    assert data['repositories']['docker'] == images_registry
-    assert data['repositories']['helm'] == charts_repo
-    assert data['charts']
+    data = generate.manifestgen(**args).data()
+    assert data['charts'] == manifest.get('charts')
 
 
 def test_generate_locked():
     """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
-    manifest_name = 'testing'
-    images_registry = 'dtr.dev.cray.com'
+    manifest = schema.new_schema(os.path.join(TEST_FILES, 'locked_manifest.yaml'))
+    args = {
+        'manifest': manifest,
+        'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
+    }
 
-    with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
-        args = {
-            'in': LOCKED_SCHEMA_V2,
-            'out': fp.name,
-            'images_registry': images_registry,
-            'charts_path': CHARTS_PATH,
-            'name': manifest_name,
-            'ignore_extra': True,
-            'version_lock': True,
-        }
-        generate.manifestgen(**args)
-        fp.seek(0)
-        locked_data = yaml.safe_load(fp)
-
-    assert locked_data['name'] == manifest_name
-    assert locked_data['repositories']['docker'] == images_registry
-    assert locked_data['charts']
-
-    with tempfile.NamedTemporaryFile(suffix='.yaml') as fp:
-        args = {
-            'in': LOCKED_SCHEMA_V2,
-            'out': fp.name,
-            'images_registry': images_registry,
-            'charts_path': CHARTS_PATH,
-            'name': manifest_name,
-            'ignore_extra': True,
-            'version_lock': False,
-        }
-        generate.manifestgen(**args)
-        fp.seek(0)
-        data = yaml.safe_load(fp)
-
-    assert data['name'] == manifest_name
-    assert data['repositories']['docker'] == images_registry
-    assert data['charts']
-
-    for chart in data['charts']:
-        if chart['name'] == 'cray-istio':
-            istio_chart = chart
-            break
+    locked_data = generate.manifestgen(**args).data()
+    print(locked_data)
+    assert locked_data['charts'] == locked_data.get('charts')
 
     for chart in locked_data['charts']:
         if chart['name'] == 'cray-istio':
             locked_istio_chart = chart
             break
 
-    assert istio_chart['version'] == '1.0.2'
     assert locked_istio_chart['version'] == '0.0.1'
 
+
+def test_generate_manifests_v1():
+    """ Test `manifestgen` for charts-repo """
+    # pylint: disable=protected-access
+
+    manifest = schema.new_schema(MANIFESTSV1)
+    customizations = schema.new_schema(CUSTOMIZATIONSV1)
+    args = {
+        'manifest': manifest,
+        'customizations': customizations,
+    }
+
+    data = generate.manifestgen(**args).data()
+    print(data)
+
+    for release in data.get('spec.releases', []):
+        r = nesteddict.NestedDict(release)
+
+
+        if r.get('spec.chart.name') == 'cray-istio':
+            found_istio_chart = r
+            break
+
+    print(found_istio_chart)
+    assert found_istio_chart.get('spec.chart.version') == '3.2.0'
+    assert found_istio_chart.get('spec.chart.values.ip') == '192.168.1.1'
+    assert found_istio_chart.get('spec.chart.values.domain') == 'shasta.io'
 
 def test_parse_chart_name():
     """ Test chart name parser """
