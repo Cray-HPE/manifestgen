@@ -1,11 +1,51 @@
 """ Various Schema objects that are passed in via yaml files """
 # pylint: disable=invalid-name,no-else-raise,no-else-return,unnecessary-pass
 import re
+from collections.abc import MutableMapping, MutableSequence
 
 import jinja2
 import yaml
 
 from manifestgen import validator, nesteddict
+
+
+def str_presenter(dumper, data):
+    "Use the | scalar syntax for yaml"
+    if len(data.splitlines()) > 1:  # check for multiline string
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+yaml.add_representer(str, str_presenter)
+
+
+def render(obj, ctx, rerun):
+    """recursively attempt to render the given object via jinja"""
+    if isinstance(obj, str):
+        # We only want to render a string with the special keys. Otherwise,
+        # would could inadvertently lose newlines.
+        if re.search(r'\{\{(.*)\}\}', obj):
+            s = jinja2.Template(obj).render(ctx)
+            try:
+                _obj = yaml.safe_load(s)
+            except yaml.error.YAMLError:
+                _obj = s
+            else:
+                # If there is a # in the string the yaml load strips it.
+                # Which is why _obj will be nothing here. So revert
+                # back to the rendered string instead.
+                if _obj is None:
+                    _obj = s
+            return (_obj, True)
+        else:
+            # Return original object since there was nothing to render
+            return (obj, rerun)
+    if isinstance(obj, MutableMapping):
+        for key in obj:
+            obj[key], rerun = render(obj[key], ctx, rerun)
+    elif isinstance(obj, MutableSequence):
+        for idx, item in enumerate(obj):
+            obj[idx], rerun = render(item, ctx, rerun)
+    return (obj, rerun)
 
 
 class BaseSchema:
@@ -78,7 +118,7 @@ class Customizations(BaseSchema):
     }
 
     def __init__(self, path, fixme="~FIXME~"):
-        rendered = yaml.safe_load(self._render(path, fixme))
+        rendered = self._render(path, fixme)
         super().__init__(rendered)
         # Validate to ensure the rendering didn't affect anything
         self.validate()
@@ -89,32 +129,24 @@ class Customizations(BaseSchema):
         found_fixmes = []
         with open(path) as fp:
             for num, line in enumerate(fp, 1):
+                try:
+                    strippedl = line.lstrip()
+                    if strippedl and strippedl[0] != "#" and fixme in line:
+                        found_fixmes.append("Line {}: {}".format(num, line))
+                except IndexError:
+                    print(line)
+                    raise
                 data += line
-                if fixme in line:
-                    found_fixmes.append("Line {}: {}".format(num, line))
         if found_fixmes:
             raise Exception("{} key found in {}:\n{}".format(fixme, path, ''.join(found_fixmes)))
 
-        scrubbed = cls._scrub(data)
-        count = 0
-        while '===TEMPLATE_VALUE___' in scrubbed:
-            count += 1
-            template = jinja2.Template(data)
-            rendered = template.render(yaml.safe_load(scrubbed)['spec'])
-            data = cls._descrub(rendered)
-            scrubbed = cls._scrub(data)
-            if count > 10:
-                raise Exception("Too many nested lookups. Maximum: {}".format(count))
+        yaml_data = yaml.safe_load(data)
 
-        return rendered
+        rerun = True
+        while rerun:
+            yaml_data['spec'], rerun = render(yaml_data['spec'], yaml_data['spec'], False)
 
-    @staticmethod
-    def _scrub(data):
-        return re.sub(r'\{\{(.*)\}\}', r'===TEMPLATE_VALUE___\1___===', data)
-
-    @staticmethod
-    def _descrub(data):
-        return re.sub(r'===TEMPLATE_VALUE___(\s?\S+\s?)___===', r'{{\1}}', data)
+        return yaml_data
 
     def get_chart(self, name):
         """ Get an embedded chart dict from the given name """
