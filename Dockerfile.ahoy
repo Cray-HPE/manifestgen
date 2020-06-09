@@ -1,6 +1,6 @@
-FROM python:2-alpine
+FROM python:3-alpine
 
-RUN apk add --no-cache py-pip python-dev build-base
+RUN apk add --no-cache py-pip python3-dev build-base
 
 COPY . /manifestgen
 WORKDIR /manifestgen
