@@ -16,6 +16,10 @@ pipeline {
 
     stage('Test') {
       steps {
+        script {
+          def data = "version: 1.0.0\nname: cray-loftsman-manifest\nschema: v2\nrepositories:\n  helm: charts.local\n  docker: gcr.io/vshasta-cray\nfailOnFirstError: false\ncharts: []\n"
+          writeFile(file: 'manifest.yaml', text: data)
+        }
         sh "mkdir -p charts"
         sh """
           docker run --rm -v \$(pwd):/workspace dtr.dev.cray.com/craypc/ahoy-manifestgen:latest \
