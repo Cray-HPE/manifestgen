@@ -16,6 +16,17 @@ spec:
       default: http://nexus.cluster.local
     rpm:
       main: http://nexus.cluster.local
+  tests:
+    aList:
+      - "foo"
+      - "bar"
+    a-dash: "dashed"
+    aLink: "{{ tests.aList }}"
+    aYaml:
+      foo:
+        bar:
+          - "baz"
+          - "bazz"
   dns:
     domains:
       base: "shasta.io"
@@ -26,6 +37,13 @@ spec:
         values:
           ip: "{{ network.static_ips.api_gw }}"
           domain: "{{ dns.domains.base }}"
+          someList: "{{ tests.aList }}"
+          some-Dash: "{{ tests['a-dash'] }}"
+          someLink: "{{ tests['aLink'] }}"
+          someSelfLink: "{{ kubernetes.services['cray-istio']['values']['someLink'] }}"
+          someMultiLineNoComment: "Foo\nBar\n"
+          someMultiLineWithComment: "# Foo\n#Bar\n"
+          someYaml: "{{ tests['aYaml'] }}"
       cray-shs:
         repository: "{{ repositories.helm.default }}"
         values:

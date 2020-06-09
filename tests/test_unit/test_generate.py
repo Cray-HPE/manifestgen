@@ -94,8 +94,8 @@ def test_generate_manifests_v1():
         'customizations': customizations,
     }
 
-    data = generate.manifestgen(**args).data()
-    print(data)
+    gen = generate.manifestgen(**args)
+    data = gen.data()
 
     for release in data.get('spec.releases', []):
         r = nesteddict.NestedDict(release)
@@ -109,6 +109,13 @@ def test_generate_manifests_v1():
     assert found_istio_chart.get('spec.chart.version') == '3.2.0'
     assert found_istio_chart.get('spec.chart.values.ip') == '192.168.1.1'
     assert found_istio_chart.get('spec.chart.values.domain') == 'shasta.io'
+    assert found_istio_chart.get('spec.chart.values.someList') == ['foo', 'bar']
+    assert found_istio_chart.get('spec.chart.values.some-Dash') == 'dashed'
+    assert found_istio_chart.get('spec.chart.values.someLink') == ['foo', 'bar']
+    assert found_istio_chart.get('spec.chart.values.someSelfLink') == ['foo', 'bar']
+    assert found_istio_chart.get('spec.chart.values.someMultiLineNoComment') == 'Foo\nBar\n'
+    assert found_istio_chart.get('spec.chart.values.someMultiLineWithComment') == '# Foo\n#Bar\n'
+    assert found_istio_chart.get('spec.chart.values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
 
 def test_parse_chart_name():
     """ Test chart name parser """
