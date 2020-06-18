@@ -6,7 +6,10 @@ from collections.abc import MutableMapping, MutableSequence
 import jinja2
 import yaml
 
-from manifestgen import validator, nesteddict
+from manifestgen import validator, nesteddict, filters
+
+jinjaEnv = jinja2.Environment()
+filters.load(jinjaEnv)
 
 
 def str_presenter(dumper, data):
@@ -24,7 +27,7 @@ def render(obj, ctx, rerun):
         # We only want to render a string with the special keys. Otherwise,
         # would could inadvertently lose newlines.
         if re.search(r'\{\{(.*)\}\}', obj):
-            s = jinja2.Template(obj).render(ctx)
+            s = jinjaEnv.from_string(obj).render(ctx)
             try:
                 _obj = yaml.safe_load(s)
             except yaml.error.YAMLError:
