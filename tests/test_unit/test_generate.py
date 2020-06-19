@@ -116,6 +116,8 @@ def test_generate_manifests_v1():
     assert found_istio_chart.get('spec.chart.values.someMultiLineNoComment') == 'Foo\nBar\n'
     assert found_istio_chart.get('spec.chart.values.someMultiLineWithComment') == '# Foo\n#Bar\n'
     assert found_istio_chart.get('spec.chart.values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
+    assert found_istio_chart.get('spec.chart.values.someNull.test') is None
+    assert found_istio_chart.get('spec.chart.values.someStaticNull') is None
 
 def test_parse_chart_name():
     """ Test chart name parser """

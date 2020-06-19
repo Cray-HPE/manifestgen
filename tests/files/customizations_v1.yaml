@@ -22,6 +22,9 @@ spec:
       - "bar"
     a-dash: "dashed"
     aLink: "{{ tests.aList }}"
+    aNull:
+      test: null
+      more: "None"
     aYaml:
       foo:
         bar:
@@ -37,13 +40,15 @@ spec:
         values:
           ip: "{{ network.static_ips.api_gw }}"
           domain: "{{ dns.domains.base }}"
+          someNull: "{{tests.aNull | toYaml }}"
           someList: "{{ tests.aList }}"
           some-Dash: "{{ tests['a-dash'] }}"
           someLink: "{{ tests['aLink'] }}"
           someSelfLink: "{{ kubernetes.services['cray-istio']['values']['someLink'] }}"
           someMultiLineNoComment: "Foo\nBar\n"
           someMultiLineWithComment: "# Foo\n#Bar\n"
-          someYaml: "{{ tests['aYaml'] }}"
+          someYaml: "{{ tests['aYaml'] | toYaml }}"
+          someStaticNull: null
       cray-shs:
         repository: "{{ repositories.helm.default }}"
         values:
