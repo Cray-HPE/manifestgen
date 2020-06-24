@@ -26,11 +26,11 @@ else
     exit 1
 fi
 
-cli_run=$($CLI --charts-path tests/files/ --in tests/files/schema_v2.yaml)
+cli_run=$($CLI --in tests/files/manifests_v1.yaml)
 if [[ $? == 0 ]]; then
-    echo "PASS: manifestgen --charts-path tests/files/ returns successfully"
+    echo "PASS: manifestgen returns successfully"
 else
-    echo "FAIL: manifestgen --charts-path tests/files/ returns an error."
+    echo "FAIL: manifestgen returns an error."
     echo $cli_run
     exit 1
 fi

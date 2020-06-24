@@ -2,6 +2,8 @@
 # pylint: disable=import-error, invalid-name, superfluous-parens, protected-access
 import os
 
+import semver
+
 from manifestgen import generate, schema, nesteddict
 
 TEST_FILES = os.path.join(os.path.dirname(__file__), '..', 'files')
@@ -9,6 +11,25 @@ TEST_FILES = os.path.join(os.path.dirname(__file__), '..', 'files')
 SCHEMAV2 = os.path.join(TEST_FILES, 'schema_v2.yaml')
 MANIFESTSV1 = os.path.join(TEST_FILES, 'manifests_v1.yaml')
 CUSTOMIZATIONSV1 = os.path.join(TEST_FILES, 'customizations_v1.yaml')
+
+
+def _parse_chart_name(chart_name):
+    # Note this NEEDs a file extension, otherwise you'll have problems
+    # because it will just split out the last period which will chop the version
+    parts = os.path.splitext(chart_name)[0].split('-')
+    for i, part in enumerate(parts, start=0):
+        ver = None
+        try:
+            ver = semver.parse(part)
+        except ValueError:
+            pass
+        if ver:
+            version = '-'.join(parts[i:])
+            name = '-'.join(parts[:i])
+            return (name, version)
+
+    raise ValueError("No version found in {}".format(chart_name))
+
 
 def test_custom_values():
     """ Test `manifestgen` with only charts-path """
@@ -28,59 +49,6 @@ def test_custom_values_dne():
     x = generate.get_local_values(os.path.join(curr, '../files/'), 'bad')
     print(x)
     assert x is None
-
-
-def test_generate_charts_path():
-    """ Test `manifestgen` for charts-path """
-    # pylint: disable=protected-access
-
-    manifest = schema.new_schema(SCHEMAV2)
-    args = {
-        'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
-        'manifest': manifest
-    }
-    data = generate.manifestgen(**args).data()
-
-    assert len(data['charts']) == 2
-    for c in data['charts']:
-        assert c['name'] in ['cray-istio', 'cray-etcd-operator']
-
-def test_generate_charts_repo():
-    """ Test `manifestgen` for charts-repo """
-    # pylint: disable=protected-access
-
-    charts_repo = 'http://helmrepo.dev.cray.com:8080'
-    manifest = schema.new_schema(SCHEMAV2)
-    args = {
-        'manifest': manifest,
-        'charts_path': charts_repo,
-    }
-
-
-    data = generate.manifestgen(**args).data()
-    assert data['charts'] == manifest.get('charts')
-
-
-def test_generate_locked():
-    """ Test `manifestgen` for charts-repo """
-    # pylint: disable=protected-access
-
-    manifest = schema.new_schema(os.path.join(TEST_FILES, 'locked_manifest.yaml'))
-    args = {
-        'manifest': manifest,
-        'charts_path': os.path.join(os.path.dirname(__file__), '..', 'files'),
-    }
-
-    locked_data = generate.manifestgen(**args).data()
-    print(locked_data)
-    assert locked_data['charts'] == locked_data.get('charts')
-
-    for chart in locked_data['charts']:
-        if chart['name'] == 'cray-istio':
-            locked_istio_chart = chart
-            break
-
-    assert locked_istio_chart['version'] == '0.0.1'
 
 
 def test_generate_manifests_v1():
@@ -130,6 +98,6 @@ def test_parse_chart_name():
     ]
     for test in tests:
         print('Testing chart name parsing for: {}'.format(test['chart_name']))
-        name, version = generate._parse_chart_name(test['chart_name'])
+        name, version = _parse_chart_name(test['chart_name'])
         assert name == test['name']
         assert version == test['version']

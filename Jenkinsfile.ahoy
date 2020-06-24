@@ -23,7 +23,7 @@ pipeline {
         sh "mkdir -p charts"
         sh """
           docker run --rm -v \$(pwd):/workspace dtr.dev.cray.com/craypc/ahoy-manifestgen:latest \
-            manifestgen --in /workspace/manifest.yaml --charts-path /workspace/charts --values-path /workspace/values
+            manifestgen --in /workspace/manifest.yaml --values-path /workspace/values
         """
       }
     }
