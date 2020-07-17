@@ -9,6 +9,7 @@ from manifestgen import generate, schema, nesteddict
 TEST_FILES = os.path.join(os.path.dirname(__file__), '..', 'files')
 
 SCHEMAV2 = os.path.join(TEST_FILES, 'schema_v2.yaml')
+MANIFESTSV1BETA1 = os.path.join(TEST_FILES, 'manifests_v1beta1.yaml')
 MANIFESTSV1 = os.path.join(TEST_FILES, 'manifests_v1.yaml')
 CUSTOMIZATIONSV1 = os.path.join(TEST_FILES, 'customizations_v1.yaml')
 
@@ -50,6 +51,42 @@ def test_custom_values_dne():
     print(x)
     assert x is None
 
+
+def test_generate_manifests_v1beta1():
+    """ Test `manifestgen` for charts-repo """
+    # pylint: disable=protected-access
+
+    manifest = schema.new_schema(MANIFESTSV1BETA1)
+    customizations = schema.new_schema(CUSTOMIZATIONSV1)
+    args = {
+        'manifest': manifest,
+        'customizations': customizations,
+    }
+
+    gen = generate.manifestgen(**args)
+    data = gen.data()
+
+    for chart in data.get('spec.charts', []):
+        c = nesteddict.NestedDict(chart)
+
+
+        if c.get('name') == 'cray-istio':
+            found_istio_chart = c
+            break
+
+    print(found_istio_chart)
+    assert found_istio_chart.get('version') == '3.2.0'
+    assert found_istio_chart.get('values.values.ip') == '192.168.1.1'
+    assert found_istio_chart.get('values.values.domain') == 'shasta.io'
+    assert found_istio_chart.get('values.values.someList') == ['foo', 'bar']
+    assert found_istio_chart.get('values.values.some-Dash') == 'dashed'
+    assert found_istio_chart.get('values.values.someLink') == ['foo', 'bar']
+    assert found_istio_chart.get('values.values.someSelfLink') == ['foo', 'bar']
+    assert found_istio_chart.get('values.values.someMultiLineNoComment') == 'Foo\nBar\n'
+    assert found_istio_chart.get('values.values.someMultiLineWithComment') == '# Foo\n#Bar\n'
+    assert found_istio_chart.get('values.values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
+    assert found_istio_chart.get('values.values.someNull.test') is None
+    assert found_istio_chart.get('values.values.someStaticNull') is None
 
 def test_generate_manifests_v1():
     """ Test `manifestgen` for charts-repo """

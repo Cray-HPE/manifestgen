@@ -1,8 +1,0 @@
-FROM python:3-alpine
-
-RUN apk add --no-cache py-pip python3-dev build-base
-
-COPY . /manifestgen
-WORKDIR /manifestgen
-RUN pip install --ignore-installed -r requirements.txt
-RUN python setup.py install

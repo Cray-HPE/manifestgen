@@ -1,0 +1,16 @@
+apiVersion: enum('manifests/v1beta1', required=True)
+metadata:
+  name: str(required=True)
+  labels: map(required=False)
+spec:
+  charts: list(include('chart'))
+---
+chart:
+  name: str(required=True)
+  version: version(required=True)
+  replaces: list(include('replace'), required=False)
+  values: map(required=False)
+---
+replace:
+  name: str(required=True)
+  namespace: str(required=True)
