@@ -1,7 +1,8 @@
 """ Various Schema objects that are passed in via yaml files """
 # pylint: disable=invalid-name,no-else-raise,no-else-return,unnecessary-pass
 import re
-from collections.abc import MutableMapping, MutableSequence
+from collections.abc import Mapping, MutableMapping, MutableSequence
+from copy import deepcopy
 
 import jinja2
 import yaml
@@ -49,6 +50,27 @@ def render(obj, ctx, rerun):
         for idx, item in enumerate(obj):
             obj[idx], rerun = render(item, ctx, rerun)
     return (obj, rerun)
+
+
+def deepupdate(self, other, shallow=False):
+    """Recursivley updates `self` with items from `other`.
+
+    By default, values from `other` will be deepcopy-ed into `self`. If
+    `shallow=True`, values will simply be assigned, resulting in a "shallow"
+    copy.
+    """
+    for k, v in other.items():
+        # Cases: (self.get(k), v) is
+        #   * (Mapping, Mapping) -> deepupdate(self[k], v)
+        #   * (Mapping, not Mapping) -> self[k] = v
+        #   * (not Mapping, Mapping) -> self[k] = v
+        #   * (not Mapping, not Mapping) -> self[k] = v
+        self_k = self.get(k)
+        if isinstance(self_k, Mapping) and isinstance(v, Mapping):
+            deepupdate(self_k, v)
+        else:
+            self[k] = v if shallow else deepcopy(v)
+    return self
 
 
 class BaseSchema:
@@ -165,7 +187,6 @@ class CustomizationsV1(Customizations):
     }
 
 
-
 class Manifest(BaseSchema):
     """ Load yaml file, and do things with it """
     _chart_key = 'spec.releases'
@@ -193,7 +214,7 @@ class Manifest(BaseSchema):
         # pylint: disable=no-self-use
         # This works for now, but may need to change if the customizations
         # schema changes
-        chart['spec']['chart'].update(data)
+        deepupdate(chart['spec']['chart'], data)
         return chart
 
 
@@ -210,7 +231,7 @@ class SchemaV2(Manifest):
         """ Properly apply customization data to the given chart for the schema version """
         # Only support values customizations in Schema V2
         chart.setdefault(self._keys['values'], {})
-        chart[self._keys['values']].update(data)
+        deepupdate(chart[self._keys['values']], data)
         return chart
 
 
