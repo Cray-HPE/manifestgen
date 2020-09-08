@@ -98,6 +98,6 @@ def validate(manifest_data):
         yamale.validate(s, data)
     except ValueError as e:
         msg = "Error validating manifest: \n" + '\n'.join(str(e).split('\n')[2:])
-        raise Exception(msg)
+        raise Exception(msg) from e
 
     return manifest_data
