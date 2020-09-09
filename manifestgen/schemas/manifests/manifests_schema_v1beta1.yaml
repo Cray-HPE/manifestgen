@@ -1,0 +1,11 @@
+apiVersion: enum('manifests/v1beta1', required=True)
+metadata:
+  name: str(required=True)
+  labels: map(required=False)
+spec:
+  charts: list(include('chart'))
+---
+chart:
+  name: str(required=True)
+  version: version(required=True)
+  values: map(required=False)

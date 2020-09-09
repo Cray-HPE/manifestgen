@@ -1,0 +1,10 @@
+---
+apiVersion: manifests/v1beta1
+metadata:
+  name: cray-loftsman-manifest
+spec:
+  charts:
+    - name: cray-istio
+      namespace: istio-system
+      version: 3.2.0
+      values: {}

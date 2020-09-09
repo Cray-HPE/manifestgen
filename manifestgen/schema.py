@@ -234,6 +234,24 @@ class SchemaV2(Manifest):
         deepupdate(chart[self._keys['values']], data)
         return chart
 
+class ManifestV1Beta1(Manifest):
+    """ Kind: Manifests, Version: V1 """
+    _chart_key = 'spec.charts'
+    _keys = {
+        'name': 'name',
+        'version': 'version',
+        'values': 'values',
+    }
+
+    def customize(self, chart, data):
+        """ Properly apply customization data to the given chart for the schema version """
+        # pylint: disable=no-self-use
+        # This works for now, but may need to change if the customizations
+        # schema changes
+        chart.setdefault(self._keys['values'], {})
+        chart[self._keys['values']].update(data)
+        return chart
+
 
 class ManifestV1(Manifest):
     """ Kind: Manifests, Version: V1 """
@@ -266,7 +284,9 @@ def new_schema(file, expected=None):
         else:
             return SchemaV2(file)
     elif kind == "manifests":
-        if version == 'v1':
+        if version == 'v1beta1':
+            return ManifestV1Beta1(file)
+        elif version == 'v1':
             return ManifestV1(file)
         else:
             return Manifest(file)
