@@ -1,6 +1,7 @@
 recursive-include manifestgen/schemas *
 recursive-include manifestgen/files *
 include LICENSE.txt
+include version
 
 recursive-exclude __pycache__  *.pyc *.pyo *.orig
 

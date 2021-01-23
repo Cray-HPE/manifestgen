@@ -5,7 +5,7 @@ with open('LICENSE.txt') as license_file:
     LICENSE = license_file.read()
 
 with open('requirements.txt') as reqs_file:
-    REQUIRMENTS = reqs_file.read()
+    REQUIREMENTS = reqs_file.read().splitlines()
 
 with open('version') as vers_file:
     VERSION = vers_file.read()
@@ -21,7 +21,9 @@ setup(
     packages=['manifestgen'],
     license=LICENSE,
     include_package_data=True,
-    install_requires=REQUIRMENTS,
+    install_requires=[REQUIREMENTS] + [
+        'importlib-metadata ~= 1.0 ; python_version < "3.8"',
+    ],
     entry_points='''
         [console_scripts]
         manifestgen=manifestgen.generate:main

@@ -4,7 +4,7 @@ metadata:
   name: cray-loftsman-manifest
 spec:
   charts:
-    - name: cray-istio
-      namespace: istio-system
+    - name: some-chart
+      namespace: some-namespace
       version: 3.2.0
       values: {}
