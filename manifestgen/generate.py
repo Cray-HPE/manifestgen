@@ -2,102 +2,99 @@
 # pylint: disable=unused-argument, superfluous-parens
 # pylint: disable=invalid-name, broad-except
 
-import sys
-import os
 import argparse
+import os
+import sys
+import warnings
 
-import yaml
+from manifestgen import __version__, ioutils
+from manifestgen.customizations import Customizations
+from manifestgen.schema import new_schema
 
-from manifestgen import schema
 
 CHART_PACKAGE_TYPE = '.tgz'
+
 
 def get_args(): # pragma: NO COVER
     """Get args"""
     # pylint: disable=line-too-long, fixme
     parser = argparse.ArgumentParser(description='Generate manifest.')
-    parser.add_argument('--values-path', metavar='PATH', help='DEPRECATED: Path to chart_name.yaml files to be passed as values.yaml to charts.')
-    parser.add_argument('-i', '--in', metavar='FILE', help='Input file', required=True)
-    parser.add_argument('-c', '--customizations', metavar='FILE', help='Customizations file')
-    parser.add_argument('-o', '--out', metavar='FILE', help='Output file')
+    parser.add_argument('-c', '--customizations',     metavar='FILE', type=argparse.FileType('r'), help='Customizations file')
+    parser.add_argument('-i', '--in',  dest='input',  metavar='FILE', type=argparse.FileType('r'), default=sys.stdin,  help='Input file')
+    parser.add_argument('-o', '--out', dest='output', metavar='FILE', type=argparse.FileType('w'), default=sys.stdout, help='Output file')
     parser.add_argument('--validate', default=False, action='store_true', help='Validate an existing manifest file.')
-    return parser.parse_args()
+    parser.add_argument('--values-path', metavar='PATH', help='DEPRECATED: Path to chart_name.yaml files to be passed as values.yaml to charts.')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+    args = parser.parse_args()
+    if args.values_path:
+        warnings.warn("Option --values-path is deprecated and will be removed, use --customizations instead", DeprecationWarning, stacklevel=2)
+    return args
 
 
 def get_local_values(a_dir, chart_name):
     """ Open values file if it exists and return the yaml as a dict """
-    value_file = os.path.join(a_dir, '{}.yaml'.format(chart_name))
-    if os.path.isfile(value_file):
-        with open(value_file) as fp:
-            return yaml.safe_load(fp)
-    return None
+    value_file = os.path.join(a_dir, f'{chart_name}.yaml')
+    if not os.path.isfile(value_file):
+        print(f"error: no such file: {value_file}", file=sys.stderr)
+        return None
+    with open(value_file) as fp:
+        return ioutils.load(fp)
 
 
-def manifestgen(**args):
+def manifestgen(manifest, customizations=None, values_path=None):
     """ Generate the manifest """
     # pylint: disable=too-many-branches
-
-    manifest = args.get('manifest')
-
-    values_dir = args.get('values_path')
-    if values_dir:
-        print("# DEPRECATED! Please migrate to the customizations yaml")
-    customizations = args.get('customizations')
-
-    manifest_charts = manifest.get_charts()
-
-    filtered_charts = []
-    for manifest_chart in manifest_charts:
-        chart_name = manifest_chart.get(manifest.get_key('name'))
-
-        if values_dir:
-            values = get_local_values(values_dir, chart_name)
-            if values is not None:
-                manifest_chart.set_deep(manifest.get_key('values'), values)
-
-        # Merge customizations schema into chart data
+    updated_charts = []
+    for chart in manifest.get_releases():
+        # Merge values file into chart
+        if values_path:
+            values = get_local_values(values_path, chart.get(manifest.RELEASE_NAME_REF))
+            if values:
+                chart.set_deep(manifest.RELEASE_VALUES_REF, values)
+        # Merge customizations into chart
         if customizations:
-            custom_data = customizations.get_chart(chart_name)
-            manifest_chart = manifest.customize(manifest_chart, custom_data)
-
-        filtered_charts.append(manifest_chart)
-
-    # Set our generated manifest with the appropriate/filtered list of charts/versions
-    manifest.set_charts(filtered_charts)
-    # Make sure it passes schema check
+            values = customizations.get_chart(chart.get(manifest.RELEASE_NAME_REF))
+            if values:
+                chart.set_deep(manifest.RELEASE_VALUES_REF, values, update=True)
+        # Save updated chart
+        updated_charts.append(chart)
+    # Update manifest charts
+    manifest.set_releases(updated_charts)
+    # Make sure updates are valid
     manifest.validate()
-
     return manifest
 
 
 def main(): # pragma: NO COVER
     """ Main entrypoint """
-    args = vars(get_args())
+    args = get_args()
 
     try:
         # Validate customizations immediately to fail early
-        customizations = args.get('customizations')
-        if customizations:
-            args['customizations'] = schema.new_schema(args['customizations'],
-                                                       expected='customizations')
-            args['customizations'].validate()
+        customizations = None
+        if args.customizations:
+            with (args.customizations):
+                customizations = Customizations.load(args.customizations)
+                customizations.validate()
 
-        args['manifest'] = schema.new_schema(args['in'], expected=['manifests', 'schema'])
+        # Validate manifest
+        with args.input as f:
+            manifest = new_schema(ioutils.load(f))
+        manifest.validate()
 
-        if args.get('validate', False):
-            args['manifest'].validate()
+        # Early abort if only validating
+        if args.validate:
             sys.exit(0)
 
-        out_yaml = manifestgen(**args).parse()
-        if args.get('out') is not None:
-            with open(args['out'], 'w') as output:
-                output.write(out_yaml)
-        else:
-            print(out_yaml)
+        # Generate manifest based on customizations
+        manifestgen(manifest, customizations, args.values_path)
 
+        # Output updated manifest
+        with args.output as f:
+            manifest.dump(stream=f)
         sys.exit(0)
     except Exception as e:
-        print(e)
+        print(str(e), file=sys.stderr)
         sys.exit(1)
 
 

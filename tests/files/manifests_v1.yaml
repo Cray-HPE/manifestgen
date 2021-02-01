@@ -7,11 +7,11 @@ spec:
     - apiVersion: helm.fluxcd.io/v1
       kind: HelmRelease
       metadata:
-        name: cray-istio
-        namespace: istio-system
+        name: some-chart
+        namespace: some-namespace
       spec:
         chart:
-          name: cray-istio
+          name: some-chart
           version: 3.2.0
           values: {}
 

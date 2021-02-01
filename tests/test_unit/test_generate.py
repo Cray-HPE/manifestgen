@@ -4,7 +4,9 @@ import os
 
 import semver
 
-from manifestgen import generate, schema, nesteddict
+from manifestgen import generate, ioutils, nesteddict
+from manifestgen.customizations import Customizations
+from manifestgen.schema import new_schema
 
 TEST_FILES = os.path.join(os.path.dirname(__file__), '..', 'files')
 
@@ -21,7 +23,7 @@ def _parse_chart_name(chart_name):
     for i, part in enumerate(parts, start=0):
         ver = None
         try:
-            ver = semver.parse(part)
+            ver = semver.VersionInfo.parse(part)
         except ValueError:
             pass
         if ver:
@@ -56,8 +58,10 @@ def test_generate_manifests_v1beta1():
     """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
-    manifest = schema.new_schema(MANIFESTSV1BETA1)
-    customizations = schema.new_schema(CUSTOMIZATIONSV1)
+    with open(MANIFESTSV1BETA1) as f:
+        manifest = new_schema(ioutils.load(f))
+    with open(CUSTOMIZATIONSV1) as f:
+        customizations = Customizations.load(f)
     args = {
         'manifest': manifest,
         'customizations': customizations,
@@ -68,32 +72,32 @@ def test_generate_manifests_v1beta1():
 
     for chart in data.get('spec.charts', []):
         c = nesteddict.NestedDict(chart)
-
-
-        if c.get('name') == 'cray-istio':
-            found_istio_chart = c
+        if c.get('name') == 'some-chart':
+            some_chart = c
             break
 
-    print(found_istio_chart)
-    assert found_istio_chart.get('version') == '3.2.0'
-    assert found_istio_chart.get('values.values.ip') == '192.168.1.1'
-    assert found_istio_chart.get('values.values.domain') == 'shasta.io'
-    assert found_istio_chart.get('values.values.someList') == ['foo', 'bar']
-    assert found_istio_chart.get('values.values.some-Dash') == 'dashed'
-    assert found_istio_chart.get('values.values.someLink') == ['foo', 'bar']
-    assert found_istio_chart.get('values.values.someSelfLink') == ['foo', 'bar']
-    assert found_istio_chart.get('values.values.someMultiLineNoComment') == 'Foo\nBar\n'
-    assert found_istio_chart.get('values.values.someMultiLineWithComment') == '# Foo\n#Bar\n'
-    assert found_istio_chart.get('values.values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
-    assert found_istio_chart.get('values.values.someNull.test') is None
-    assert found_istio_chart.get('values.values.someStaticNull') is None
+    print(some_chart)
+    assert some_chart.get('version') == '3.2.0'
+    assert some_chart.get('values.ip') == '192.168.1.1'
+    assert some_chart.get('values.domain') == 'shasta.io'
+    assert some_chart.get('values.someList') == ['foo', 'bar']
+    assert some_chart.get('values.some-Dash') == 'dashed'
+    assert some_chart.get('values.someLink') == ['foo', 'bar']
+    assert some_chart.get('values.someSelfLink') == ['foo', 'bar']
+    assert some_chart.get('values.someMultiLineNoComment') == 'Foo\nBar\n'
+    assert some_chart.get('values.someMultiLineWithComment') == '# Foo\n#Bar\n'
+    assert some_chart.get('values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
+    assert some_chart.get('values.someNull.test') is None
+    assert some_chart.get('values.someStaticNull') is None
 
 def test_generate_manifests_v1():
     """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
-    manifest = schema.new_schema(MANIFESTSV1)
-    customizations = schema.new_schema(CUSTOMIZATIONSV1)
+    with open(MANIFESTSV1) as f:
+        manifest = new_schema(ioutils.load(f))
+    with open(CUSTOMIZATIONSV1) as f:
+        customizations = Customizations.load(f)
     args = {
         'manifest': manifest,
         'customizations': customizations,
@@ -104,25 +108,23 @@ def test_generate_manifests_v1():
 
     for release in data.get('spec.releases', []):
         r = nesteddict.NestedDict(release)
-
-
-        if r.get('spec.chart.name') == 'cray-istio':
-            found_istio_chart = r
+        if r.get('spec.chart.name') == 'some-chart':
+            some_chart = r
             break
 
-    print(found_istio_chart)
-    assert found_istio_chart.get('spec.chart.version') == '3.2.0'
-    assert found_istio_chart.get('spec.chart.values.ip') == '192.168.1.1'
-    assert found_istio_chart.get('spec.chart.values.domain') == 'shasta.io'
-    assert found_istio_chart.get('spec.chart.values.someList') == ['foo', 'bar']
-    assert found_istio_chart.get('spec.chart.values.some-Dash') == 'dashed'
-    assert found_istio_chart.get('spec.chart.values.someLink') == ['foo', 'bar']
-    assert found_istio_chart.get('spec.chart.values.someSelfLink') == ['foo', 'bar']
-    assert found_istio_chart.get('spec.chart.values.someMultiLineNoComment') == 'Foo\nBar\n'
-    assert found_istio_chart.get('spec.chart.values.someMultiLineWithComment') == '# Foo\n#Bar\n'
-    assert found_istio_chart.get('spec.chart.values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
-    assert found_istio_chart.get('spec.chart.values.someNull.test') is None
-    assert found_istio_chart.get('spec.chart.values.someStaticNull') is None
+    print(some_chart)
+    assert some_chart.get('spec.chart.version') == '3.2.0'
+    assert some_chart.get('spec.chart.values.ip') == '192.168.1.1'
+    assert some_chart.get('spec.chart.values.domain') == 'shasta.io'
+    assert some_chart.get('spec.chart.values.someList') == ['foo', 'bar']
+    assert some_chart.get('spec.chart.values.some-Dash') == 'dashed'
+    assert some_chart.get('spec.chart.values.someLink') == ['foo', 'bar']
+    assert some_chart.get('spec.chart.values.someSelfLink') == ['foo', 'bar']
+    assert some_chart.get('spec.chart.values.someMultiLineNoComment') == 'Foo\nBar\n'
+    assert some_chart.get('spec.chart.values.someMultiLineWithComment') == '# Foo\n#Bar\n'
+    assert some_chart.get('spec.chart.values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
+    assert some_chart.get('spec.chart.values.someNull.test') is None
+    assert some_chart.get('spec.chart.values.someStaticNull') is None
 
 def test_parse_chart_name():
     """ Test chart name parser """

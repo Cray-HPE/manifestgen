@@ -1,5 +1,3 @@
 # pylint: skip-file
 
-from . import nesteddict, generate, validator, schema
-
-__all__ = ['generate', 'validator', 'nesteddict', 'schema', 'filters']
+__version__ = "1.3.0"

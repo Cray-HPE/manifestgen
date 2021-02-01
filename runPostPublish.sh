@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="$(cat ./version)"
+VERSION="$(./version.sh)"
 TAG="v$VERSION"
 
 if [[ "$GIT_BRANCH" == 'origin/master' ||  "$GIT_BRANCH" == 'master' ]]; then
