@@ -35,21 +35,15 @@ spec:
       base: "shasta.io"
   kubernetes:
     services:
-      cray-istio:
-        repository: "{{ repositories.helm.default }}"
-        values:
-          ip: "{{ network.static_ips.api_gw }}"
-          domain: "{{ dns.domains.base }}"
-          someNull: "{{tests.aNull | toYaml }}"
-          someList: "{{ tests.aList }}"
-          some-Dash: "{{ tests['a-dash'] }}"
-          someLink: "{{ tests['aLink'] }}"
-          someSelfLink: "{{ kubernetes.services['cray-istio']['values']['someLink'] }}"
-          someMultiLineNoComment: "Foo\nBar\n"
-          someMultiLineWithComment: "# Foo\n#Bar\n"
-          someYaml: "{{ tests['aYaml'] | toYaml }}"
-          someStaticNull: null
-      cray-shs:
-        repository: "{{ repositories.helm.default }}"
-        values:
-          domain: "{{ dns.domains.base }}"
+      some-chart:
+        ip: "{{ network.static_ips.api_gw }}"
+        domain: "{{ dns.domains.base }}"
+        someNull: "{{tests.aNull | toYaml }}"
+        someList: "{{ tests.aList }}"
+        some-Dash: "{{ tests['a-dash'] }}"
+        someLink: "{{ tests['aLink'] }}"
+        someSelfLink: "{{ kubernetes.services['some-chart']['someLink'] }}"
+        someMultiLineNoComment: "Foo\nBar\n"
+        someMultiLineWithComment: "# Foo\n#Bar\n"
+        someYaml: "{{ tests['aYaml'] | toYaml }}"
+        someStaticNull: null

@@ -60,7 +60,7 @@ class Version(Validator):
         # pylint: disable=broad-except
         value = '{}'.format(value)
         try:
-            semver.parse(value)
+            semver.VersionInfo.parse(value)
         except Exception:  # pragma: NO COVER
             return False
         return True
