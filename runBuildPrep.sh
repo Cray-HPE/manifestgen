@@ -27,7 +27,7 @@ fi
 pip3 install --upgrade pip
 pip3 install --upgrade --no-use-pep517 nox
 
-pip3 install --ignore-installed pyinstaller==3.3
+pip3 install --ignore-installed pyinstaller
 
 pyinstaller_version=$(python3 -m PyInstaller --version)
 if [[ $? != 0 ]]; then
