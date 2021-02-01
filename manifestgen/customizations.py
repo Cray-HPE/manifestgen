@@ -6,7 +6,7 @@ from collections.abc import MutableMapping, MutableSequence
 import jinja2
 import yaml
 
-from manifestgen import filters, io
+from manifestgen import filters, ioutils
 from manifestgen.schema import BaseSchema
 
 
@@ -65,7 +65,7 @@ class Customizations(BaseSchema):
         if found_fixmes:
             raise ValueError("{} detected:\n{}".format(fixme, ''.join(found_fixmes)))
         # Load data
-        obj = io.load(data)
+        obj = ioutils.load(data)
         # Recursively render templated values in obj
         rerun = True
         while rerun:

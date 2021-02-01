@@ -1,7 +1,7 @@
 """ Various Schema objects """
 # pylint: disable=invalid-name,no-else-raise,no-else-return,unnecessary-pass
 
-from manifestgen import io, nesteddict, validator
+from manifestgen import ioutils, nesteddict, validator
 
 
 class BaseSchema:
@@ -27,7 +27,7 @@ class BaseSchema:
 
     def dump(self, *args, **kwds):
         """ Dump data """
-        return io.dump(self._dict(), *args, **kwds)
+        return ioutils.dump(self._dict(), *args, **kwds)
 
     def validate(self):
         """ Validate manifest data """

@@ -4,7 +4,7 @@ import os
 
 import semver
 
-from manifestgen import generate, io, nesteddict
+from manifestgen import generate, ioutils, nesteddict
 from manifestgen.customizations import Customizations
 from manifestgen.schema import new_schema
 
@@ -23,7 +23,7 @@ def _parse_chart_name(chart_name):
     for i, part in enumerate(parts, start=0):
         ver = None
         try:
-            ver = semver.parse(part)
+            ver = semver.VersionInfo.parse(part)
         except ValueError:
             pass
         if ver:
@@ -59,7 +59,7 @@ def test_generate_manifests_v1beta1():
     # pylint: disable=protected-access
 
     with open(MANIFESTSV1BETA1) as f:
-        manifest = new_schema(io.load(f))
+        manifest = new_schema(ioutils.load(f))
     with open(CUSTOMIZATIONSV1) as f:
         customizations = Customizations.load(f)
     args = {
@@ -95,7 +95,7 @@ def test_generate_manifests_v1():
     # pylint: disable=protected-access
 
     with open(MANIFESTSV1) as f:
-        manifest = new_schema(io.load(f))
+        manifest = new_schema(ioutils.load(f))
     with open(CUSTOMIZATIONSV1) as f:
         customizations = Customizations.load(f)
     args = {
