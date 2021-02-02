@@ -52,10 +52,10 @@ class NestedDict(dict):
         last = keys.pop()
         for k in keys:
             setter = setter.setdefault(k, {})
-        if update:
+        if update and last in setter:
             deepupdate(setter[last], value)
         else:
-            setter[last] = value
+            setter[last] = deepcopy(value)
 
     def get(self, key, default=None):
         """ Deep get a value. \n

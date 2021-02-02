@@ -7,4 +7,5 @@ spec:
     - name: some-chart
       namespace: some-namespace
       version: 3.2.0
-      values: {}
+      values:
+        notCustomized: True
