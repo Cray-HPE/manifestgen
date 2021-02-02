@@ -78,6 +78,51 @@ def test_generate_manifests_v1beta1():
 
     print(some_chart)
     assert some_chart.get('version') == '3.2.0'
+    assert some_chart.get('values.notCustomized', False) is True
+    assert some_chart.get('values.ip') == '192.168.1.1'
+    assert some_chart.get('values.domain') == 'shasta.io'
+    assert some_chart.get('values.someList') == ['foo', 'bar']
+    assert some_chart.get('values.some-Dash') == 'dashed'
+    assert some_chart.get('values.someLink') == ['foo', 'bar']
+    assert some_chart.get('values.someSelfLink') == ['foo', 'bar']
+    assert some_chart.get('values.someMultiLineNoComment') == 'Foo\nBar\n'
+    assert some_chart.get('values.someMultiLineWithComment') == '# Foo\n#Bar\n'
+    assert some_chart.get('values.someYaml') == {"foo": {"bar": ["baz", "bazz"]}}
+    assert some_chart.get('values.someNull.test') is None
+    assert some_chart.get('values.someStaticNull') is None
+
+def test_generate_manifests_v1beta1_no_values():
+    """ Test `manifestgen` for charts-repo """
+    # pylint: disable=protected-access
+
+    with open(MANIFESTSV1BETA1) as f:
+        manifest = new_schema(ioutils.load(f))
+
+    # delete values from some-chart
+    for chart in manifest.get('spec.charts', []):
+        if chart.get('name') == 'some-chart':
+            if 'values' in chart:
+                del chart['values']
+
+    with open(CUSTOMIZATIONSV1) as f:
+        customizations = Customizations.load(f)
+    args = {
+        'manifest': manifest,
+        'customizations': customizations,
+    }
+
+    gen = generate.manifestgen(**args)
+    data = gen.data()
+
+    for chart in data.get('spec.charts', []):
+        c = nesteddict.NestedDict(chart)
+        if c.get('name') == 'some-chart':
+            some_chart = c
+            break
+
+    print(some_chart)
+    assert some_chart.get('version') == '3.2.0'
+    assert some_chart.get('values.notCustomized', False) is False
     assert some_chart.get('values.ip') == '192.168.1.1'
     assert some_chart.get('values.domain') == 'shasta.io'
     assert some_chart.get('values.someList') == ['foo', 'bar']

@@ -94,7 +94,7 @@ def main(): # pragma: NO COVER
         with args.output as f:
             manifest.dump(stream=f)
         sys.exit(0)
-    except Exception as e:
+    except: # pylint: disable=bare-except
         print("panic: failed to generate manifest", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
