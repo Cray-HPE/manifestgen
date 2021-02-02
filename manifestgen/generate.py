@@ -5,6 +5,7 @@
 import argparse
 import os
 import sys
+import traceback
 import warnings
 
 from manifestgen import __version__, ioutils
@@ -94,7 +95,8 @@ def main(): # pragma: NO COVER
             manifest.dump(stream=f)
         sys.exit(0)
     except Exception as e:
-        print(str(e), file=sys.stderr)
+        print("panic: failed to generate manifest", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 
