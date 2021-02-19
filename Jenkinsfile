@@ -25,6 +25,6 @@
 rpmBuild(
     channel: "casm-cloud-alerts",
     product: "csm",
-    target_node: "ncn"
+    target_node: "ncn",
     githubPushRepo: "Cray-HPE/manifestgen
 )
