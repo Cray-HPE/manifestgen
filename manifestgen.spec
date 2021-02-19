@@ -1,7 +1,7 @@
 %define install_dir /opt/cray/loftsman
 
 Name: manifestgen
-License: Cray Software License Agreement
+License: MIT License
 Summary: Cray Command Line Tool
 Version: %(cat ./build_version)
 Release: %(echo ${BUILD_METADATA})
