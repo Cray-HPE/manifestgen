@@ -1,0 +1,65 @@
+@Library('csm-shared-library') _
+
+pipeline {
+    agent {
+        docker {
+            label "metal-gcp-builder"
+            image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+
+            // Run as root
+            args "-u root"
+        }
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10"))
+        timestamps()
+    }
+
+    environment {
+        NAME = "manifestgen"
+        IS_STABLE = getBuildIsStable()
+    }
+
+    stages {
+        stage("Build Prep") {
+            steps {
+                sh "make build_prep"
+            }
+        }
+
+        stage("Unit Test") {
+            steps {
+                sh "make build_test"
+            }
+        }
+
+        stage("Build RPM") {
+            steps {
+                sh "make rpm"
+            }
+        }
+
+        stage("Post Build") {
+            steps {
+                sh "make build_post"
+            }
+        }
+
+        stage("Publish") {
+            steps {
+                script {
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Own files so jenkins can clean them up later
+            postChownFiles()
+        }
+    }
+}
