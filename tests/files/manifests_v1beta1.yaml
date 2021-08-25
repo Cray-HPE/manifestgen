@@ -5,7 +5,6 @@ metadata:
 spec:
   charts:
     - name: some-chart
-      namespace: some-namespace
       version: 3.2.0
       values:
         notCustomized: True
