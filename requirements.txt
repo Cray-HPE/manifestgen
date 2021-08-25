@@ -1,5 +1,6 @@
-yamale==2.2.0
+yamale==3.0.8
 semver==2.13.0
-requests==2.25.1
+requests>=2.20.0
 jinja2==2.11.3
 pyyaml==5.4.1
+certifi==2017.4.17
