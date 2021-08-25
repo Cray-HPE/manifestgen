@@ -32,7 +32,7 @@ def deepupdate(self, other, shallow=False):
     `shallow=True`, values will simply be assigned, resulting in a "shallow"
     copy.
     """
-    # pylint: disable=C0103
+    # pylint: disable=invalid-name
     for k, v in other.items():
         # Cases: (self.get(k), v) is
         #   * (Mapping, Mapping) -> deepupdate(self[k], v)
@@ -71,6 +71,7 @@ class NestedDict(dict):
         setter = self
         keys = key.split('.')
         last = keys.pop()
+        # pylint: disable=invalid-name
         for k in keys:
             setter = setter.setdefault(k, {})
         if update and last in setter:
@@ -85,8 +86,10 @@ class NestedDict(dict):
         """
         keys = key.split('.')
         found = {}
-        for k in self.keys():
-            found[k] = self[k]
+
+        # pylint: disable=invalid-name
+        for k, v in self.items():
+            found[k] = v
         for k in keys:
             if not isinstance(found, dict):
                 return default

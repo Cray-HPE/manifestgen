@@ -59,7 +59,7 @@ def get_local_values(a_dir, chart_name):
     if not os.path.isfile(value_file):
         print(f"error: no such file: {value_file}", file=sys.stderr)
         return None
-    with open(value_file) as fp:
+    with open(value_file, encoding='utf-8') as fp:
         return ioutils.load(fp)
 
 

@@ -79,9 +79,9 @@ def test_generate_manifests_v1beta1():
     """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
-    with open(MANIFESTSV1BETA1) as f:
+    with open(MANIFESTSV1BETA1, encoding='utf-8') as f:
         manifest = new_schema(ioutils.load(f))
-    with open(CUSTOMIZATIONSV1) as f:
+    with open(CUSTOMIZATIONSV1, encoding='utf-8') as f:
         customizations = Customizations.load(f)
     args = {
         'manifest': manifest,
@@ -116,7 +116,7 @@ def test_generate_manifests_v1beta1_no_values():
     """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
-    with open(MANIFESTSV1BETA1) as f:
+    with open(MANIFESTSV1BETA1, encoding='utf-8') as f:
         manifest = new_schema(ioutils.load(f))
 
     # delete values from some-chart
@@ -125,7 +125,7 @@ def test_generate_manifests_v1beta1_no_values():
             if 'values' in chart:
                 del chart['values']
 
-    with open(CUSTOMIZATIONSV1) as f:
+    with open(CUSTOMIZATIONSV1, encoding='utf-8') as f:
         customizations = Customizations.load(f)
     args = {
         'manifest': manifest,
@@ -160,9 +160,9 @@ def test_generate_manifests_v1():
     """ Test `manifestgen` for charts-repo """
     # pylint: disable=protected-access
 
-    with open(MANIFESTSV1) as f:
+    with open(MANIFESTSV1, encoding='utf-8') as f:
         manifest = new_schema(ioutils.load(f))
-    with open(CUSTOMIZATIONSV1) as f:
+    with open(CUSTOMIZATIONSV1, encoding='utf-8') as f:
         customizations = Customizations.load(f)
     args = {
         'manifest': manifest,
