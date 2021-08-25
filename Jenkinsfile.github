@@ -2,13 +2,7 @@
 
 pipeline {
     agent {
-        docker {
-            label "metal-gcp-builder"
-            image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
-
-            // Run as root
-            args "-u root"
-        }
+        label "metal-gcp-builder"
     }
 
     options {
@@ -22,32 +16,32 @@ pipeline {
     }
 
     stages {
-        stage("Build Prep") {
+        stage("Build") {
+            agent {
+                docker {
+                    label "metal-gcp-builder"
+                    reuseNode true
+                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+
+                    // Run as root
+                    args "-u root"
+                }
+            }
             steps {
                 sh "make build_prep"
-            }
-        }
-
-        stage("Unit Test") {
-            steps {
                 sh "make build_test"
-            }
-        }
-
-        stage("Build RPM") {
-            steps {
                 sh "make rpm"
-            }
-        }
-
-        stage("Post Build") {
-            steps {
                 sh "make build_post"
             }
         }
 
         stage("Publish") {
             steps {
+                // The build stage leaves files and dirs around that are root
+                // owned, and that can get in the way of the publish stage running
+                // on the node.  Make sure all the files in the workspace are owned
+                // by jenkins.
+                sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist/rpmbuild"
                 script {
                     publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
                     publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
