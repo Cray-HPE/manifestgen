@@ -22,7 +22,7 @@
 from setuptools import setup
 
 
-with open('requirements.txt') as reqs_file:
+with open('requirements.txt', encoding='utf-8') as reqs_file:
     REQUIREMENTS = reqs_file.read().splitlines()
 
 setup(
