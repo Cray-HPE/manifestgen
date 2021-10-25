@@ -56,7 +56,7 @@ class NestedDict(dict):
 
     def __repr__(self):
         dictrepr = dict.__repr__(self)
-        return '%s(%s)' % (type(self).__name__, dictrepr)
+        return f"{type(self).__name__}({dictrepr})"
 
     @classmethod
     def to_yaml(cls, representer, node):

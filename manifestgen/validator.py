@@ -69,7 +69,8 @@ def _get_schema_filename(schema_ver):
 
     filename = SCHEMAS.get(schema_key)
     if not filename:
-        raise Exception('No schema found for: {}'.format(schema_ver))
+        #raise Exception('No schema found for: {}'.format(schema_ver))
+        raise Exception(f"No schema found for: {schema_ver}")
     return filename
 
 
@@ -79,7 +80,7 @@ class Version(Validator):
 
     def _is_valid(self, value):
         # pylint: disable=broad-except
-        value = '{}'.format(value)
+        value = f"{value}"
         try:
             semver.VersionInfo.parse(value)
         except Exception:  # pragma: NO COVER

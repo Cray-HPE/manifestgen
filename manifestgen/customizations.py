@@ -84,7 +84,7 @@ class Customizations(BaseSchema):
                 raise
             data += line
         if found_fixmes:
-            raise ValueError("{} detected:\n{}".format(fixme, ''.join(found_fixmes)))
+            raise ValueError(f"{fixme} detected:\n {''.join(found_fixmes)}")
         # Load data
         obj = ioutils.load(data)
         # Recursively render templated values in obj
