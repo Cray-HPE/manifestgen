@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.3.4] - 2021-10-25 
+### Changed
+- upgrade Yamale package from 3.0.8 -> 4.0.0
+### Fixed
+- Fix bug after upgrading Yamale package from 2.2.0 -> 3.0.8
+
+
+
 ## [1.3.2] - 2021-02-19 Switch to MIT License for release to GitHub
 
 ## [1.0.0] - 20202-05-29

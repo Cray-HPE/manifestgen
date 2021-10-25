@@ -116,7 +116,7 @@ def validate(manifest_data):
     schema_file = _get_schema_filename(data[0][0].get('schema', data[0][0].get('apiVersion', '')))
     s = yamale.make_schema(schema_file, validators=validators)
     try:
-        yamale.validate(s, data)
+        yamale.validate(s, data, strict=False)
     except ValueError as e:
         msg = "Error validating manifest: \n" + '\n'.join(str(e).split('\n')[2:])
         raise Exception(msg) from e
