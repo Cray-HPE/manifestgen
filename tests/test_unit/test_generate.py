@@ -52,7 +52,8 @@ def _parse_chart_name(chart_name):
             name = '-'.join(parts[:i])
             return (name, version)
 
-    raise ValueError("No version found in {}".format(chart_name))
+    #raise ValueError("No version found in {}".format(chart_name))
+    raise ValueError (f"No version found in {chart_name}")
 
 
 def test_custom_values():
@@ -202,7 +203,7 @@ def test_parse_chart_name():
         {'chart_name': 'foo-1.2.3-123.1.tgz', 'name': 'foo', 'version': '1.2.3-123.1'},
     ]
     for test in tests:
-        print('Testing chart name parsing for: {}'.format(test['chart_name']))
+        print (f"Testing chart name parsing for: {test['chart_name']}")
         name, version = _parse_chart_name(test['chart_name'])
         assert name == test['name']
         assert version == test['version']

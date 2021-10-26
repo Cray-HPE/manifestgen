@@ -69,7 +69,8 @@ def _get_schema_filename(schema_ver):
 
     filename = SCHEMAS.get(schema_key)
     if not filename:
-        raise Exception('No schema found for: {}'.format(schema_ver))
+        #raise Exception('No schema found for: {}'.format(schema_ver))
+        raise Exception(f"No schema found for: {schema_ver}")
     return filename
 
 
@@ -79,7 +80,7 @@ class Version(Validator):
 
     def _is_valid(self, value):
         # pylint: disable=broad-except
-        value = '{}'.format(value)
+        value = f"{value}"
         try:
             semver.VersionInfo.parse(value)
         except Exception:  # pragma: NO COVER
@@ -116,7 +117,7 @@ def validate(manifest_data):
     schema_file = _get_schema_filename(data[0][0].get('schema', data[0][0].get('apiVersion', '')))
     s = yamale.make_schema(schema_file, validators=validators)
     try:
-        yamale.validate(s, data)
+        yamale.validate(s, data, strict=False)
     except ValueError as e:
         msg = "Error validating manifest: \n" + '\n'.join(str(e).split('\n')[2:])
         raise Exception(msg) from e

@@ -38,7 +38,7 @@ class BaseSchema:
         self._kind = parts.pop().lower() if parts else "schema"
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self._dict())
+        return f"{self.__class__}({self._dict()})"
 
     def __str__(self):
         return self.dump()
