@@ -1,4 +1,4 @@
-yamale==2.2.0
+yamale==4.0.0
 semver==2.13.0
 requests==2.25.1
 jinja2==2.11.3
