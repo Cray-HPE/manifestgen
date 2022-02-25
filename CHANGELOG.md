@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.3.5] - 2022-02-25
+### Fixed
+- Fix markupsafe missing function failure (pin markupsafe < 2.1.0)
+
+
 ## [1.3.4] - 2021-10-25 
 ### Changed
 - upgrade Yamale package from 3.0.8 -> 4.0.0
