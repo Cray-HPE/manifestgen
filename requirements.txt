@@ -4,3 +4,4 @@ requests>=2.20.0
 jinja2==2.11.3
 pyyaml==5.4.1
 certifi==2017.4.17
+markupsafe<2.1.0
