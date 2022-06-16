@@ -3,7 +3,7 @@
 Name: manifestgen
 License: MIT License
 Summary: Cray Command Line Tool
-Version: %(git describe --tags | tr -s '-' _)
+Version: %(echo ${VERSION})
 Release: %(echo ${BUILD_METADATA})
 Vendor: Cray Inc.
 Group: Cloud
@@ -26,5 +26,6 @@ install -m 755 dist/manifestgen %{buildroot}%{_bindir}/manifestgen
 
 %files
 %{_bindir}/manifestgen
+%license LICENSE
 
 %changelog
