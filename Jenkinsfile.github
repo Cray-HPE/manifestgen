@@ -1,5 +1,8 @@
 @Library('csm-shared-library') _
 
+def pythonVersion = '3.6.15'
+def promotionToken = ~"(release\\/.*)"
+def isStable = env.TAG_NAME != null || env.BRANCH_NAME ==~ promotionToken ? true : false
 pipeline {
     agent {
         label "metal-gcp-builder"
@@ -7,44 +10,52 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(numToKeepStr: "10"))
+        timeout(time: 20, unit: 'MINUTES')
+        disableConcurrentBuilds()
         timestamps()
     }
 
     environment {
+        BUILD_METADATA = getRpmRevision(isStable: isStable)
+        GIT_REPO_NAME = getRepoName()
         NAME = "manifestgen"
-        IS_STABLE = getBuildIsStable()
     }
 
     stages {
-        stage("Build") {
+        stage("Prepare: RPM") {
             agent {
                 docker {
                     label "metal-gcp-builder"
                     reuseNode true
-                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
-
-                    // Run as root
-                    args "-u root"
+                    image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python:${pythonVersion}"
                 }
             }
             steps {
-                sh "make build_prep"
-                sh "make build_test"
-                sh "make rpm"
-                sh "make build_post"
+                runLibraryScript("addRpmMetaData.sh", "${env.GIT_REPO_NAME}.spec")
+                sh "make prepare"
             }
         }
 
-        stage("Publish") {
+        stage("Build: RPM") {
+            agent {
+                docker {
+                    label "metal-gcp-builder"
+                    reuseNode true
+                    image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python:${pythonVersion}"
+                }
+            }
             steps {
-                // The build stage leaves files and dirs around that are root
-                // owned, and that can get in the way of the publish stage running
-                // on the node.  Make sure all the files in the workspace are owned
-                // by jenkins.
-                sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist/rpmbuild"
+                sh "make rpm"
+            }
+        }
+
+        stage("Publish: RPM") {
+            steps {
                 script {
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", os: "sle-15sp2", arch: "x86_64", isStable: isStable)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", os: "sle-15sp3", arch: "x86_64", isStable: isStable)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", os: "sle-15sp2", arch: "src", isStable: isStable)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", os: "sle-15sp3", arch: "src", isStable: isStable)
                 }
             }
         }
