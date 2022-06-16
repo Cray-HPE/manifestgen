@@ -1,0 +1,22 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  nox:
+    name: Lint and Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.6'
+    - name: requirements
+      run: |
+        pip install nox
+    - name: nox
+      env:
+        GIT_REPO_NAME: "${GITHUB_REPOSITORY#*/}"
+      run: |
+        nox

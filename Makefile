@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
-NAME ?= manifestgen
-VERSION ?= $(shell cat ./build_version)
+NAME ?= ${GIT_REPO_NAME}
+VERSION ?= $(shell git describe --tags | tr -s '-' _)
 
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 RPM_SPEC_FILE ?= ${NAME}.spec
@@ -12,18 +12,10 @@ RPM_SOURCE_PATH := ${RPM_BUILD_DIR}/SOURCES/${RPM_SOURCE_NAME}.tar.gz
 all: build_prep built_test rpm build_post
 rpm: rpm_package_source rpm_build_source rpm_build
 
-build_prep:
+prepare:
 	rm -rf $(RPM_BUILD_DIR)
 	mkdir -p $(RPM_BUILD_DIR)/SPECS $(RPM_BUILD_DIR)/SOURCES
 	cp $(RPM_SPEC_FILE) $(RPM_BUILD_DIR)/SPECS
-
-	./runBuildPrep.sh
-
-build_test:
-	./runUnitTest.sh
-
-build_post:
-	./runPostBuild.sh
 
 rpm_package_source:
 	tar --transform 'flags=r;s,^,/$(RPM_SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(RPM_SOURCE_PATH) .
