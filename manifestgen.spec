@@ -4,7 +4,7 @@ Name: manifestgen
 License: MIT License
 Summary: Cray Command Line Tool
 Version: %(echo ${VERSION})
-Release: %(echo ${BUILD_METADATA})
+Release: 1
 Vendor: Cray Inc.
 Group: Cloud
 Source: %{name}-%{version}.tar.gz
