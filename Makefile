@@ -1,8 +1,9 @@
 SHELL := /bin/bash
 
 NAME ?= ${GIT_REPO_NAME}
-VERSION ?= $(shell git describe --tags | tr -s '-' _)
-
+ifeq ($(VERSION),)
+VERSION := $(shell git describe --tags | tr -s '-' '~' | tr -d '^v')
+endif
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 RPM_SPEC_FILE ?= ${NAME}.spec
 RPM_SOURCE_NAME ?= ${NAME}-${VERSION}
