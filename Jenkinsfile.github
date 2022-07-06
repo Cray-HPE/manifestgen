@@ -2,7 +2,7 @@
 
 def pythonVersion = '3.6.15'
 def promotionToken = ~"(release\\/.*)"
-def isStable = env.TAG_NAME != null || env.BRANCH_NAME ==~ promotionToken ? true : false
+def isStable = env.TAG_NAME != null ? true : false
 pipeline {
     agent {
         label "metal-gcp-builder"
