@@ -21,7 +21,7 @@ pipeline {
     }
 
     stages {
-        stage("Prepare: RPM") {
+        stage('Prepare: RPM') {
             agent {
                 docker {
                     label "metal-gcp-builder"
@@ -35,9 +35,10 @@ pipeline {
             }
         }
 
-        stage("Build: RPM") {
+        stage('Build: RPM') {
             agent {
                 docker {
+                    args "-u root"
                     label "metal-gcp-builder"
                     reuseNode true
                     image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python:${pythonVersion}"
@@ -48,7 +49,7 @@ pipeline {
             }
         }
 
-        stage("Publish: RPM") {
+        stage('Publish: RPM') {
             steps {
                 script {
                     publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", os: "sle-15sp2", arch: "x86_64", isStable: isStable)
