@@ -63,7 +63,7 @@ pipeline {
         stage('Build: RPM') {
             agent {
                 docker {
-                    args "-u root"
+                    args "-u root -v ${env.WORKSPACE}:/workspace"
                     label "metal-gcp-builder"
                     reuseNode true
                     image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python:${pythonVersion}"
@@ -71,6 +71,7 @@ pipeline {
             }
             steps {
                 sh "make rpm"
+                sh "chown -R jenkins:jenkins /workspace"
             }
         }
 
