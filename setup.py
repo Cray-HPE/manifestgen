@@ -19,20 +19,107 @@
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
+#
+import subprocess
+from os.path import dirname
+from os.path import isdir
+from os.path import join
+from os import devnull
+import re
+
+from setuptools import find_packages
 from setuptools import setup
 
+version_re = re.compile("^Version: (.+)$", re.M)
 
-with open('requirements.txt', encoding='utf-8') as reqs_file:
-    REQUIREMENTS = reqs_file.read().splitlines()
+with open("LICENSE") as license_file:
+    LICENSE = license_file.read()
+
+
+def readme() -> str:
+    """
+    Print the README file.
+    :returns: Read README file.
+    """
+    with open("README.md") as file:
+        return str(file.read())
+
+
+def get_version():
+    d = dirname(__file__)
+
+    if isdir(join(d, ".git")):
+        # Get the version using "git describe".
+        cmd = "git describe --tags --match v[0-9]*".split()
+        try:
+            version = subprocess.check_output(cmd).decode().strip()
+        except subprocess.CalledProcessError:
+            print("Unable to get version number from git tags")
+            exit(1)
+
+        # PEP 386 compatibility
+        if "-" in version:
+            version = ".post".join(version.split("-")[:2])
+
+        # Don't declare a version "dirty" merely because a time stamp has
+        # changed. If it is dirty, append the branch name as a suffix to
+        # indicate a development revision after the release.
+        with open(devnull, "w") as fd_devnull:
+            subprocess.call(["git", "status"], stdout=fd_devnull, stderr=fd_devnull)
+
+        cmd = "git diff-index --name-only HEAD".split()
+        try:
+            dirty = subprocess.check_output(cmd).decode().strip()
+        except subprocess.CalledProcessError:
+            print("Unable to get git index status")
+            exit(1)
+
+        if dirty != "":
+            version += ".dev1"
+
+    else:
+        # Extract the version from the PKG-INFO file.
+        with open(join(d, "PKG-INFO")) as f:
+            version = version_re.search(f.read()).group(1)
+
+    return version
 
 setup(
     name='manifestgen',
     description="Loftsman manifest generator",
-    packages=['manifestgen'],
+    long_description=readme(),
+    version=get_version(),
+    license=LICENSE,
+    packages=find_packages(),
     include_package_data=True,
-    install_requires=[REQUIREMENTS],
-    entry_points='''
-        [console_scripts]
-        manifestgen=manifestgen.generate:main
-    '''
+    zip_safe=False,
+    extras_require={
+        'ci': {
+            'nox',
+        },
+        'lint': {
+            'pylint',
+            'six>=1.11.0',
+        },
+        'test': {
+            'mock',
+            'pytest',
+            'pytest-cov',
+            'names',
+            'requests-mock',
+            'six>=1.11.0',
+        }
+    },
+    install_requires=[
+        'yamale==4.0.0',
+        'semver==2.13.0',
+        'requests>=2.20.0',
+        'jinja2==2.11.3',
+        'pyyaml==5.4.1',
+        'certifi==2017.4.17',
+        'markupsafe<2.1.0',
+    ],
+    entry_points={
+        "console_scripts": ["manifestgen=manifestgen.generate:main"],
+    },
 )

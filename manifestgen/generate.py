@@ -25,17 +25,18 @@
 
 import argparse
 import os
+import pkg_resources
 import sys
 import traceback
 import warnings
 
-from manifestgen import __version__, ioutils
+from manifestgen import ioutils
 from manifestgen.customizations import Customizations
 from manifestgen.schema import new_schema
 
 
 CHART_PACKAGE_TYPE = '.tgz'
-
+version = pkg_resources.get_distribution("manifestgen").version
 
 def get_args(): # pragma: NO COVER
     """Get args"""
@@ -46,7 +47,7 @@ def get_args(): # pragma: NO COVER
     parser.add_argument('-o', '--out', dest='output', metavar='FILE', type=argparse.FileType('w'), default=sys.stdout, help='Output file')
     parser.add_argument('--validate', default=False, action='store_true', help='Validate an existing manifest file.')
     parser.add_argument('--values-path', metavar='PATH', help='DEPRECATED: Path to chart_name.yaml files to be passed as values.yaml to charts.')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {version}')
     args = parser.parse_args()
     if args.values_path:
         warnings.warn("Option --values-path is deprecated and will be removed, use --customizations instead", DeprecationWarning, stacklevel=2)

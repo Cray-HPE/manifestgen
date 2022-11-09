@@ -36,8 +36,8 @@ def tests(session):
     """
     # Install all test dependencies, then install this package in-place.
     path = 'tests'
-    session.install('-r', 'requirements-test.txt')
-    session.install('-e', '.')
+    session.install('.[test]')
+    session.install('.')
 
     if session.posargs:
         path = session.posargs[0]
@@ -66,7 +66,7 @@ def lint(session):
     """
     run_cmd = ['pylint', 'manifestgen', 'tests']
 
-    session.install('-r', 'requirements-lint.txt')
+    session.install('.[lint]')
     session.install('.')
     session.run(*run_cmd)
 
