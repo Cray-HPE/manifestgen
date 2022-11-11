@@ -21,18 +21,18 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-%global __python /usr/bin/python3
-%global __pyinstaller /usr/bin/pyinstaller
+%global __python /usr/local/bin/python3.6
+%define __pyinstaller /home/jenkins/.local/bin/pyinstaller
 %define install_dir /opt/cray/loftsman
 
-Name: manifestgen
+Name: %(echo $NAME)
 License: MIT License
 Summary: Cray Command Line Tool
 Version: %(echo ${VERSION})
 Release: 1
 Vendor: Cray Inc.
 Group: Cloud
-Source: %{name}-%{version}.tar.gz
+Source: %{name}-%{version}.tar.bz2
 
 %description
 A CLI tool to generate a loftsman manifest from a blob
@@ -44,8 +44,7 @@ A CLI tool to generate a loftsman manifest from a blob
 %{__python} -m pip install -U pyinstaller
 %{__python} -m pip install -q build
 %{__python} -m build
-
-%{__python} setup.py install
+%{__python} -m pip install dist/%{name}*.tar.gz
 
 %{__pyinstaller} --clean -y --hidden-import='pkg_resources.py2_warn' --hidden-import yamale --add-data ../manifestgen/schemas:manifestgen/schemas -p manifestgen --onefile manifestgen/generate.py -n manifestgen --specpath dist
 
