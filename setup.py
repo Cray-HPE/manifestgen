@@ -27,6 +27,8 @@ from os.path import join
 from os import devnull
 import re
 
+import pkg_resources
+
 from setuptools import find_packages
 from setuptools import setup
 
@@ -76,12 +78,15 @@ def get_version():
 
         if dirty != "":
             version += ".dev1"
-
     else:
-        # Extract the version from the PKG-INFO file.
-        with open(join(d, "PKG-INFO")) as f:
-            version = version_re.search(f.read()).group(1)
-
+        try:
+            # Extract the version from the PKG-INFO file.
+            with open(join(d, "PKG-INFO")) as f:
+                version = version_re.search(f.read()).group(1)
+        except FileNotFoundError:
+            # Maybe this package is already installed, and setup.py is invoked
+            # out of context by a scanner.
+            version = pkg_resources.get_distribution("manifestgen").version
     return version
 
 setup(

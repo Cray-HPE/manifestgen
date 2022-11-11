@@ -1,18 +1,25 @@
 name: Snyk
+
 on: push
+
 jobs:
   security:
+    name: Security Scanning
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python@master
-      #  continue-on-error: true # To make sure that SARIF upload gets called
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Also fetch git-tags
+      - name: Setup Snyk
+        uses: snyk/actions/setup@master
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.6'
+      - name: Snyk monitor
+        run: |
+          pip install -U wheel
+          pip install .
+          snyk test --file=setup.py --command=python3
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #  with:
-      #    args: --sarif-file-output=snyk.sarif
-      #- name: Upload result to GitHub Code Scanning
-      #  uses: github/codeql-action/upload-sarif@v1
-      #  with:
-      #    sarif_file: snyk.sarif
