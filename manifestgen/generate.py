@@ -25,10 +25,11 @@
 
 import argparse
 import os
-import pkg_resources
 import sys
 import traceback
 import warnings
+
+import pkg_resources
 
 from manifestgen import ioutils
 from manifestgen.customizations import Customizations
