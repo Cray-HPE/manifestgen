@@ -27,7 +27,7 @@
 
 def pythonImage = 'artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python'
 def isStable = env.TAG_NAME != null ? true : false
-def pythonVersion = '3.6.15'
+def pythonVersion = '3.10'
 pipeline {
     agent {
         label "metal-gcp-builder"

@@ -21,7 +21,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-%global __python /usr/local/bin/python3.6
+%global __python /usr/local/bin/python3.10
 %define __pyinstaller /home/jenkins/.local/bin/pyinstaller
 %define install_dir /opt/cray/loftsman
 
