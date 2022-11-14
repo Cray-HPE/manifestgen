@@ -119,7 +119,7 @@ setup(
         'yamale==4.0.0',
         'semver==2.13.0',
         'requests>=2.20.0',
-        'jinja2==2.11.3',
+        'jinja2==3.1.2',
         'pyyaml==5.4.1',
         'certifi==2017.4.17',
         'markupsafe<2.1.0',
