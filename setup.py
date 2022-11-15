@@ -121,7 +121,7 @@ setup(
         'requests>=2.20.0',
         'jinja2==3.1.2',
         'pyyaml==5.4.1',
-        'certifi==2017.4.17',
+        'certifi==2022.9.24',
         'markupsafe<2.1.0',
     ],
     entry_points={
