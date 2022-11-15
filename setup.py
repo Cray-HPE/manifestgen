@@ -120,7 +120,7 @@ setup(
         'semver==2.13.0',
         'requests>=2.20.0',
         'jinja2==3.1.2',
-        'pyyaml==5.4.1',
+        'pyyaml==6.0',
         'certifi==2022.9.24',
         'markupsafe<2.2.0',
     ],
