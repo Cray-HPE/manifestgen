@@ -122,7 +122,7 @@ setup(
         'jinja2==3.1.2',
         'pyyaml==5.4.1',
         'certifi==2022.9.24',
-        'markupsafe<2.1.0',
+        'markupsafe<2.2.0',
     ],
     entry_points={
         "console_scripts": ["manifestgen=manifestgen.generate:main"],
