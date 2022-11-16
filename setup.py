@@ -29,7 +29,7 @@ import re
 
 import pkg_resources
 
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 version_re = re.compile("^Version: (.+)$", re.M)
@@ -95,7 +95,7 @@ setup(
     long_description=readme(),
     version=get_version(),
     license=LICENSE,
-    packages=find_packages(),
+    packages=find_namespace_packages(),
     include_package_data=True,
     zip_safe=False,
     extras_require={
@@ -108,21 +108,21 @@ setup(
         },
         'test': {
             'mock',
+            'names',
             'pytest',
             'pytest-cov',
-            'names',
             'requests-mock',
             'six>=1.11.0',
         }
     },
     install_requires=[
-        'yamale==4.0.0',
-        'semver==2.13.0',
-        'requests>=2.20.0',
-        'jinja2==3.1.2',
-        'pyyaml==6.0',
         'certifi==2022.9.24',
+        'jinja2==3.1.2',
         'markupsafe<2.2.0',
+        'pyyaml==6.0',
+        'requests>=2.20.0',
+        'semver==2.13.0',
+        'yamale==4.0.0',
     ],
     entry_points={
         "console_scripts": ["manifestgen=manifestgen.generate:main"],
