@@ -116,7 +116,7 @@ setup(
         }
     },
     install_requires=[
-        'yamale==4.0.4',
+        'yamale==4.0.0',
         'semver==2.13.0',
         'requests>=2.20.0',
         'jinja2==3.1.2',
