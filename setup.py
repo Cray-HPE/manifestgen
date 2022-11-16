@@ -108,21 +108,21 @@ setup(
         },
         'test': {
             'mock',
+            'names',
             'pytest',
             'pytest-cov',
-            'names',
             'requests-mock',
             'six>=1.11.0',
         }
     },
     install_requires=[
-        'yamale==4.0.0',
-        'semver==2.13.0',
-        'requests>=2.20.0',
-        'jinja2==3.1.2',
-        'pyyaml==6.0',
         'certifi==2022.9.24',
+        'jinja2==3.1.2',
         'markupsafe<2.2.0',
+        'pyyaml==6.0',
+        'requests>=2.20.0',
+        'semver==2.13.0',
+        'yamale==4.0.0',
     ],
     entry_points={
         "console_scripts": ["manifestgen=manifestgen.generate:main"],
