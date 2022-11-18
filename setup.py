@@ -95,6 +95,7 @@ setup(
     long_description=readme(),
     version=get_version(),
     license=LICENSE,
+    url='https://github.com/Cray-HPE/manifestgen',
     packages=find_namespace_packages(),
     include_package_data=True,
     zip_safe=False,
