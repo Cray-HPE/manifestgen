@@ -5,6 +5,9 @@ on: push
 jobs:
   security:
     name: Security Scanning
+    strategy:
+      matrix:
+        python: ['3.10']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,7 +18,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.10'
+          python-version: ${{ matrix.python }}
       - name: Snyk monitor
         run: |
           pip install -U wheel
