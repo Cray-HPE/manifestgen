@@ -35,10 +35,6 @@ ifeq ($(PYTHON_VERSION),)
 PYTHON_VERSION := $(shell awk -v replace="'" '/pythonVersion/{gsub(replace,"", $$NF); print $$NF; exit}' Jenkinsfile.github)
 endif
 
-ifeq ($(SLE_VERSION),)
-SLE_VERSION := '15.4'
-endif
-
 SPEC_FILE := ${NAME}.spec
 SOURCE_NAME := ${NAME}-${VERSION}
 
@@ -53,7 +49,6 @@ rpm: print rpm_package_source rpm_build_source rpm_build
 print:
 	@printf "%-20s: %s\n" Name $(NAME)
 	@printf "%-20s: %s\n" 'Python Version' $(PY_VERSION)
-	@printf "%-20s: %s\n" 'SLE Version' $(SLE_VERSION)
 	@printf "%-20s: %s\n" Version $(VERSION)
 
 prepare:

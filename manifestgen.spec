@@ -21,18 +21,19 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-%global __python /usr/local/bin/python%(echo $PYTHON_VERSION)
+%global __python /usr/bin/python%(echo $PYTHON_VERSION)
 %define __pyinstaller /home/jenkins/.local/bin/pyinstaller
 %define install_dir /opt/cray/loftsman
 
-Name: %(echo $NAME)
-License: MIT License
-Summary: Cray Command Line Tool
-Version: %(echo ${VERSION})
-Release: 1
-Vendor: Cray Inc.
-Group: Cloud
-Source: %{name}-%{version}.tar.bz2
+Name:      %(echo $NAME)
+License:   MIT License
+Summary:   Cray Command Line Tool
+Version:   %(echo ${VERSION})
+Release:   1
+Vendor:    Cray Inc.
+Group:     Cloud
+Source:    %{name}-%{version}.tar.bz2
+BuildArch: noarch
 
 %description
 A CLI tool to generate a loftsman manifest from a blob
