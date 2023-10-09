@@ -122,7 +122,7 @@ setup(
         'markupsafe<2.2.0',
         'pyyaml==6.0',
         'requests>=2.20.0',
-        'semver==2.13.0',
+        'semver==3.0.2',
         'yamale==4.0.0',
     ],
     entry_points={
