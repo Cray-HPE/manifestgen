@@ -118,7 +118,7 @@ setup(
     },
     install_requires=[
         'certifi==2022.12.7',
-        'jinja2==3.1.2',
+        'jinja2==3.1.3',
         'markupsafe<2.2.0',
         'pyyaml==6.0',
         'requests>=2.20.0',
