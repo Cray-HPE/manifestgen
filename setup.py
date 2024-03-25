@@ -123,7 +123,7 @@ setup(
         'pyyaml==6.0',
         'requests>=2.20.0',
         'semver==2.13.0',
-        'yamale==4.0.0',
+        'yamale==5.1.0',
     ],
     entry_points={
         "console_scripts": ["manifestgen=manifestgen.generate:main"],
